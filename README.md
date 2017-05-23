@@ -17,15 +17,11 @@ as viable grasps or not, and clustering viable grasps which are geometrically si
 
 The reference for this package is: [High precision grasp pose detection in dense clutter](http://arxiv.org/abs/1603.01564).
 
-### Baxter Demo
-
-<!--[![Baxter Demo](readme/baxter.png)](https://www.youtube.com/watch?v=p4JXpZVxr48 "Baxter Demo - click to watch")-->
-tbd: insert video
-
-
 ### UR5 Demo
 
-tbd: insert video
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=y7z-Yn1PQNI
+" target="_blank"><img src="http://img.youtube.com/vi/y7z-Yn1PQNI/0.jpg" 
+alt="UR5 demo" width="640" height="480" border="0" /></a>
 
 
 ## 2) Requirements
