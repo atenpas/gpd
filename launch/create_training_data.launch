@@ -1,0 +1,63 @@
+<launch>
+  
+  <!-- Load hand geometry parameters -->  
+  <include file="$(find gpd)/launch/hand_geometry.launch">
+    <arg name="node" value="create_training_data" />
+  </include>
+  
+  <!-- Load classifier parameters -->  
+  <include file="$(find gpd)/launch/caffe/classifier_15channels.launch">
+    <arg name="node" value="create_training_data" />
+  </include>
+  
+	<node name="create_training_data" pkg="gpd" type="create_training_data" output="screen">
+    
+    <!-- YCB or Bigbird folder -->    
+    <param name="data_root" value="/media/andreas/storage/data/bigbird_pcds/" />
+    
+    <!-- list of objects to process -->    
+    <param name="objects_file" value="/media/andreas/storage/data/bigbird_pcds/objects.txt" />
+    
+    <!-- output folder for grasp images and labels -->    
+    <param name="output_root" value="/media/andreas/storage/data/bigbird_pcds/cpp/" />
+    
+    <!-- Plotting parameters -->
+    <param name="plot_normals" value="false" />
+    <param name="plot_grasps" value="false" />
+    
+    <!-- Preprocessing of point cloud -->
+    <param name="voxelize" value="true"/> <!-- Voxelize the point cloud -->
+    <param name="remove_outliers" value="false"/> <!-- Remove statistical outliers from the point cloud -->
+    <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam> <!-- (x,y,z)-dimensions of the workspace -->
+    <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
+
+    <!-- General parameters -->
+    <param name="num_views" value="20" /> <!-- The number of camera views -->
+    <param name="num_samples" value="1000" /> <!-- The number of samples to draw from the point cloud -->
+    <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->  
+    
+    <!-- Parameters for local grasp candidate search -->
+    <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->
+    <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
+    <param name="rotation_axis" value="2" /> <!-- 2: curvature axis -->
+    
+    <!-- Filtering of grasp candidates --> 
+    <param name="filter_grasps" value="false" /> <!-- on workspace and robot gripper width -->
+    <param name="min_aperture" value="0.3" /> <!-- The minimum gripper width -->
+    <param name="max_aperture" value="0.7" /> <!-- The maximum gripper width -->
+    <rosparam param="workspace_grasps"> [0.6, 1.0, -0.33, 0.13, -0.3, 1.0] </rosparam> <!-- (x,y,z)-dimensions of the workspace, should be smaller than <workspace> -->
+    <param name="filter_half_antipodal" value="false"/> <!-- on half antipodal -->
+    
+    <!-- Grasp image creation -->
+    <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
+        
+    <!-- Clustering of grasps -->
+    <param name="min_inliers" value="10" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
+    
+    <!-- Grasp selection -->
+    <param name="min_score_diff" value="0" /> <!-- Threshold to sort out grasps with low scores -->
+    <param name="num_selected" value="100" /> <!-- The number of selected grasps (sorted by score) -->
+        
+	</node>
+  
+</launch>

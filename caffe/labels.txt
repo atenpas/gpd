@@ -1,0 +1,2 @@
+0 non-antipodal grasp
+1 antipodal grasp

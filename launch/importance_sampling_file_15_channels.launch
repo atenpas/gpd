@@ -1,0 +1,84 @@
+<launch>
+  
+  <!-- Load hand geometry parameters -->  
+  <include file="$(find gpd)/launch/hand_geometry.launch">
+    <arg name="node" value="classify_grasp_candidates" />
+  </include>
+  
+  <!-- Load classifier parameters -->  
+  <include file="$(find gpd)/launch/caffe/classifier_15channels.launch">
+    <arg name="node" value="classify_grasp_candidates" />
+  </include>
+  
+	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
+    
+    <!-- Where the point cloud is stored -->    
+<!--
+    <param name="cloud_file_name" value="/home/andreas/data/bigbird/3m_high_track_spray_adhesive/clouds/NP1_0.pcd" />
+-->
+    <param name="cloud_file_name" value="/home/andreas/data/baxter_clutter/scene0.pcd" />
+<!--
+    <param name="cloud_file_name" value="/home/baxter/data/bigbird/3m_high_tack_spray_adhesive/clouds/NP1_0.pcd" />
+-->
+<!--
+    <param name="cloud_file_name" value="/media/andreas/2a9b7d00-f8c3-4849-9ddc-283f5b7c206a/data/object_datasets/bb_onesource/pcd/vo5_tea_therapy_healthful_green_tea_smoothing_shampoo_gt.pcd" />
+-->
+
+    <!-- If sequential importance sampling is used -->
+    <param name="use_importance_sampling" value="true" />
+    
+    <!-- Parameters for sequential importance sampling -->
+    <param name="num_init_samples" value="50" />
+    <param name="num_iterations" value="10" />    
+    <param name="num_samples_per_iteration" value="40" />
+    <param name="prob_rand_samples" value="0.2" />
+    <param name="std" value="0.01" />
+    <param name="sampling_method" value="1" /> <!-- 0: Sum of Gaussians, 1: Max of Gaussians -->
+    <param name="visualize_steps" value="true" />
+    <param name="visualize_results" value="true" />
+    
+    <!-- Plotting parameters -->
+    <param name="plot_normals" value="false" />
+    <param name="plot_samples" value="false" />    
+    <param name="plot_candidates" value="false" />
+    <param name="plot_filtered_grasps" value="false" />
+    <param name="plot_valid_grasps" value="false" />
+    <param name="plot_clusters" value="false" />
+    <param name="plot_selected_grasps" value="false" />
+    
+    <!-- Preprocessing of point cloud -->
+    <param name="voxelize" value="true"/> <!-- Voxelize the point cloud -->
+    <param name="remove_outliers" value="false"/> <!-- Remove statistical outliers from the point cloud -->
+    <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam> <!-- (x,y,z)-dimensions of the workspace -->
+    <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
+
+    <!-- General parameters -->
+    <param name="num_samples" value="100" /> <!-- The number of samples to draw from the point cloud -->
+    <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->
+    <param name="gaussian_table_size" value="10000000" />    
+    
+    <!-- Parameters for local grasp candidate search -->
+    <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->
+    <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
+    <param name="rotation_axis" value="2" /> <!-- 2: curvature axis -->
+    
+    <!-- Filtering of grasp candidates --> 
+    <param name="filter_grasps" value="false" /> <!-- on workspace and robot gripper width -->
+    <param name="min_aperture" value="0.3" /> <!-- The minimum gripper width -->
+    <param name="max_aperture" value="0.7" /> <!-- The maximum gripper width -->
+    <rosparam param="workspace_grasps"> [0.6, 1.0, -0.33, 0.13, -0.3, 1.0] </rosparam> <!-- (x,y,z)-dimensions of the workspace, should be smaller than <workspace> -->
+    <param name="filter_half_antipodal" value="true"/> <!-- on half antipodal -->
+    
+    <!-- Grasp image creation -->
+    <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
+        
+    <!-- Clustering of grasps -->
+    <param name="min_inliers" value="1" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
+    
+    <!-- Grasp selection -->
+    <param name="min_score_diff" value="0" /> <!-- Threshold to sort out grasps with low scores -->
+    <param name="num_selected" value="100" /> <!-- The number of selected grasps (sorted by score) -->
+        
+	</node>
+  
+</launch>

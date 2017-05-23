@@ -1,0 +1,16 @@
+<!-- Hand geometry parameters 
+  
+  hand_depth: the finger length (measured from hand base to finger tip)
+  init_bite: the minimum distance between the fingertip and the side of the object that is oriented toward the hand    
+-->
+
+<launch>
+  <!-- 'node' gets passed in as an argument to this file -->
+  <arg name="node" />
+  
+  <param name="$(arg node)/finger_width" value="0.01" />
+  <param name="$(arg node)/hand_outer_diameter" value="0.105" /> 
+  <param name="$(arg node)/hand_depth" value="0.06" />
+  <param name="$(arg node)/hand_height" value="0.02" />
+  <param name="$(arg node)/init_bite" value="0.01" />
+</launch>

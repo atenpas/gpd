@@ -1,0 +1,71 @@
+<launch>
+  
+  <!-- Load hand geometry parameters -->  
+  <include file="$(find gpd)/launch/ur5_hand_geometry.launch">
+    <arg name="node" value="detect_grasps" />
+  </include>
+  
+  <!-- Load classifier parameters -->  
+  <include file="$(find gpd)/launch/caffe/ur5_classifier_15channels.launch">
+    <arg name="node" value="detect_grasps" />
+  </include>
+  
+	<node name="detect_grasps" pkg="gpd" type="detect_grasps" output="screen">
+    
+    <!-- If sequential importance sampling is used (default: false) -->
+    <param name="use_importance_sampling" value="false" />
+        
+    <!-- What type of point cloud is used and what ROS topic it comes from -->
+    <param name="cloud_type" value="2" /> <!-- 0: PointCloud2, 1: CloudIndexed, 2: CloudSamples -->
+    <param name="cloud_topic" value="/cloud_stitched" />
+    
+    <!-- (optional) The ROS topic that the samples come from (default: an empty string) -->
+    <param name="samples_topic" value="" />
+    
+    <!-- Plotting parameters -->
+    <param name="plot_normals" value="false" />
+    <param name="plot_samples" value="false" />
+    <param name="plot_candidates" value="false" />
+    <param name="plot_filtered_grasps" value="false" />
+    <param name="plot_valid_grasps" value="false" />
+    <param name="plot_clusters" value="false" />
+    <param name="plot_selected_grasps" value="false" />
+    
+    <!-- Preprocessing of point cloud -->
+    <param name="voxelize" value="false"/>
+    <param name="remove_outliers" value="false"/>
+    <!--<rosparam param="workspace"> [0.4, 0.5, 0.00, 0.20, 0, 0.1] </rosparam>-->
+    <!--<rosparam param="workspace"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam>-->
+    <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
+    <rosparam param="camera_position"> [0, 0, 0] </rosparam>
+            
+    <!-- General parameters -->
+    <param name="num_samples" value="1000" />
+    <param name="num_threads" value="8" />
+    
+    <!-- Parameters for local grasp candidate search -->
+    <param name="nn_radius" value="0.01" />
+    <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
+    <param name="rotation_axis" value="2" /> <!-- 2: curvature axis -->
+    
+    <!-- Filtering of grasp candidates -->
+    <param name="filter_grasps" value="false" /> <!-- on workspace and robot hand aperture -->
+    <rosparam param="workspace_grasps"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam>
+    <param name="filter_half_antipodal" value="false"/> <!-- on half antipodal -->
+    
+    <!-- Grasp image creation -->
+    <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
+    <param name="remove_plane_before_image_calculation" value="true" /> <!-- removes table plane from point cloud to speed up shadow computations -->
+        
+    <!-- Clustering of grasps -->
+    <param name="min_inliers" value="0" />
+        
+    <!-- Grasp selection -->
+    <param name="min_score_diff" value="50" />
+    <param name="min_aperture" value="0.0" />
+    <param name="max_aperture" value="0.085" />
+    <param name="num_selected" value="100" />
+        
+	</node>
+  
+</launch>

@@ -1,0 +1,17 @@
+<!-- Parameters for the CAFFE classifier -->
+<launch>
+  <!-- 'node' gets passed in as an argument to this file -->
+  <arg name="node" /> 
+  
+  <arg name="caffe_path" value="$(find gpd)/caffe/15channels" />
+  
+  <param name="$(arg node)/model_file" value="$(arg caffe_path)/lenet_15_channels.prototxt" />
+  <param name="$(arg node)/trained_file" value="$(arg caffe_path)/two_views_15_channels_90_deg_no_flipping.caffemodel" />
+  
+  <!-- Grasp Image Parameters -->
+  <param name="$(arg node)/image_outer_diameter" value="0.10" /> 
+  <param name="$(arg node)/image_depth" value="0.06" />
+  <param name="$(arg node)/image_height" value="0.02" />
+  <param name="$(arg node)/image_size" value="60" />  
+  <param name="$(arg node)/image_num_channels" value="15" />  
+</launch>
