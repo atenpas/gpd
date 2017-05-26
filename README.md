@@ -48,11 +48,11 @@ with Boost 1.54. So, when you clone Caffe, please use the command below instead.
 
 2. Install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu).
 
-3. Clone the [grasp_pose_generator](https://github.ccs.neu.edu/atp/gpg) repository into some folder:
+3. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
 
    ```
    $ cd <location_of_your_workspace>
-   $ git clone https://github.ccs.neu.edu/atp/gpg.git
+   $ git clone https://github.com/atenpas/gpg.git
    ```
 
 4. Build and install the *grasp_pose_generator*: 
@@ -72,7 +72,7 @@ with Boost 1.54. So, when you clone Caffe, please use the command below instead.
    
    ```
    $ cd <location_of_your_workspace/src>
-   $ git clone https://github.ccs.neu.edu/atp/gpd.git
+   $ git clone https://github.com/atenpas/gpd.git
    ```
 
 2. Build your catkin workspace.
@@ -83,7 +83,7 @@ with Boost 1.54. So, when you clone Caffe, please use the command below instead.
    ```
 
 
-## 5) Generate Grasp Candidates for a Point Cloud File
+## 5) Generate Grasps for a Point Cloud File
 
 Launch the grasp pose detection on an example point cloud:
    

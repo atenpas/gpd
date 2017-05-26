@@ -138,6 +138,11 @@ grasp = grasps[0] # grasps are sorted in descending order by score
 print 'Selected grasp with score:', grasp.score
 ```
 
+After selecting a grasp, you can get the information about where to place the robot hand 
+from the *GraspConfig* message. Here is a visualization of the orientation.
+
+![hand orientation](./hand_frame.png "Hand orientation")
+
 To use an actual RGBD camera on your robot instead of a PCD file, you can start by connecting the *select_grasp* node 
 to *openni2* as in the first tutorial.
 
