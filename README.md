@@ -110,7 +110,7 @@ For use on a robot, see *launch/ur5_15_channels.launch*.
 
 ## 8) Citation
 
-If you like this package and use it in your own work, please cite our paper ([arXiv](http://arxiv.org/abs/1603.01564)):
+If you like this package and use it in your own work, please cite our paper:
 
-[1] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, Robert Platt. **High precision grasp pose detection in dense clutter.** IROS 2016. 598-605.
+[1] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, Robert Platt. [**High precision grasp pose detection in dense clutter.**](http://arxiv.org/abs/1603.01564) IROS 2016. 598-605.
 
