@@ -13,10 +13,10 @@
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
     <!-- Where the point cloud is stored -->    
-<!--
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
--->
+<!--
     <param name="cloud_file_name" value="/home/ur5/.ros/2017-04-20_21_13_33_cloud.pcd" />
+-->
 <!--
     <param name="cloud_file_name" value="/home/andreas/data/UR5/2017-03-31_19_18_44_cloud.pcd" />
 -->
@@ -36,10 +36,10 @@
     <!-- Preprocessing of point cloud -->
     <param name="voxelize" value="false"/> <!-- Voxelize the point cloud -->
     <param name="remove_outliers" value="false"/> <!-- Remove statistical outliers from the point cloud -->
-<!--
     <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
--->
+<!--
     <rosparam param="workspace"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam>
+-->
     <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
 
     <!-- General parameters -->
@@ -60,7 +60,7 @@
     
     <!-- Grasp image creation -->
     <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
-        
+            
     <!-- Clustering of grasps -->
     <param name="min_inliers" value="10" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
     

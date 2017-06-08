@@ -1,10 +1,17 @@
 #include "../../include/gpd/caffe_classifier.h"
 
 
-CaffeClassifier::CaffeClassifier(const std::string& model_file, const std::string& weights_file)
+CaffeClassifier::CaffeClassifier(const std::string& model_file, const std::string& weights_file, bool use_gpu)
 {
   // Initialize Caffe.
-  caffe::Caffe::set_mode(caffe::Caffe::GPU);
+  if (use_gpu)
+  {
+    caffe::Caffe::set_mode(caffe::Caffe::GPU);
+  }
+  else
+  {
+    caffe::Caffe::set_mode(caffe::Caffe::CPU);
+  }
 
   // Load pretrained network.
   net_.reset(new caffe::Net<float>(model_file, caffe::TEST));

@@ -49,11 +49,13 @@ GraspDetector::GraspDetector(ros::NodeHandle& node)
 
   // Read classification parameters and create classifier.
   std::string model_file, weights_file;
+  bool use_gpu;
   node.param("model_file", model_file, std::string(""));
   node.param("trained_file", weights_file, std::string(""));
   node.param("min_score_diff", min_score_diff_, 500.0);
   node.param("create_image_batches", create_image_batches_, true);
-  classifier_ = new CaffeClassifier(model_file, weights_file);
+  node.param("use_gpu", use_gpu, true);
+  classifier_ = new CaffeClassifier(model_file, weights_file, use_gpu);
 
   // Read grasp image parameters.
   node.param("image_outer_diameter", image_params_.outer_diameter_, hand_search_params.hand_outer_diameter_);

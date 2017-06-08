@@ -63,7 +63,7 @@ class CaffeClassifier
      * \param model_file the location of the file that describes the network model
      * \param weights_file the location of the file that contains the network weights
      */
-    CaffeClassifier(const std::string& model_file, const std::string& weights_file);
+    CaffeClassifier(const std::string& model_file, const std::string& weights_file, bool use_gpu = true);
 
     /**
      * \brief Classify grasp candidates as viable grasps or not.
