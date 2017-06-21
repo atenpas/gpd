@@ -116,8 +116,7 @@ for both options. You can find these files in *gpd/caffe/15channels*. For a sing
 stands for different angles between the two sensors. For example, for the UR5, to switch between these, change the 
 parameter *trained_file* in the launch file *launch/caffe/ur5_15channels.launch*.
 
-<img src="readme/single_view.png" alt="Single View" style="height:193px;">
-<img src="readme/two_views.png" alt="Two Views" style="height:193px;">
+![rviz screenshot](readme/views.png "Single View and Two Views")
 
 
 ## 9) Citation
