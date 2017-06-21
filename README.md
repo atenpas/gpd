@@ -108,7 +108,19 @@ Brief explanations of parameters are given in *launch/classify_candidates_file_1
 For use on a robot, see *launch/ur5_15_channels.launch*.
 
 
-## 8) Citation
+## 8) Views
+
+You can use this package with a single or with two depth sensors. The package comes with weight files for Caffe 
+for both options. You can find these files in *gpd/caffe/15channels*. For a single sensor, use 
+*single_view_15_channels.caffemodel* and for two depth sensors, use *two_views_15_channels_[...]*. The *[...]* 
+stands for different angles between the two sensors. For example, for the UR5, to switch between these, change the 
+parameter *trained_file* in the launch file *launch/caffe/ur5_15channels.launch*.
+
+<img src="readme/single_view.png" alt="Single View" style="height:193px"></td></tr>
+<img src="readme/two_views.png" alt="Two Views" style="height:193px">
+
+
+## 9) Citation
 
 If you like this package and use it in your own work, please cite our paper:
 
