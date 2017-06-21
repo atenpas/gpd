@@ -19,7 +19,7 @@ The reference for this package is: [High precision grasp pose detection in dense
 
 ### UR5 Demo
 
-<a href="http://www.youtube.com/watch?feature=player_embedded&v=y7z-Yn1PQNI
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=kfe5bNt35ZI
 " target="_blank"><img src="http://img.youtube.com/vi/y7z-Yn1PQNI/0.jpg" 
 alt="UR5 demo" width="640" height="480" border="0" /></a>
 
