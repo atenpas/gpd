@@ -110,16 +110,28 @@ For use on a robot, see *launch/ur5_15_channels.launch*.
 
 ## 8) Views
 
-You can use this package with a single or with two depth sensors. The package comes with weight files for Caffe 
-for both options. You can find these files in *gpd/caffe/15channels*. For a single sensor, use 
-*single_view_15_channels.caffemodel* and for two depth sensors, use *two_views_15_channels_[...]*. The *[...]* 
-stands for different angles between the two sensors. For example, for the UR5, to switch between these, change the 
-parameter *trained_file* in the launch file *launch/caffe/ur5_15channels.launch*.
-
 ![rviz screenshot](readme/views.png "Single View and Two Views")
 
+You can use this package with a single or with two depth sensors. The package comes with weight files for Caffe 
+for both options. You can find these files in *gpd/caffe/15channels*. For a single sensor, use 
+*single_view_15_channels.caffemodel* and for two depth sensors, use *two_views_15_channels_[angle]*. The *[angle]* is 
+the angle between the two sensor views, as illustrated in the picture below. In the two-views setting, you want to 
+register the two point clouds together before sending them to GPD.
 
-## 9) Citation
+<img src="readme/view_angle.png" alt="Angle Between Sensor Views" style="width: 264px;"/>
+
+To switch between one and two sensor views, change the parameter *trained_file* in the launch file 
+*launch/caffe/ur5_15channels.launch*.
+
+
+## 9) Input Channels for Neural Network
+
+The package comes with weight files for two different input representations for the neural network that is used to 
+decide if a grasp is viable or not: 3 or 15 channels. The default is 15 channels. However, you can use the 3 channels 
+to achieve better runtime for a loss in grasp quality. For more details, please see the reference below.
+
+
+## 10) Citation
 
 If you like this package and use it in your own work, please cite our paper:
 
