@@ -118,7 +118,7 @@ for both options. You can find these files in *gpd/caffe/15channels*. For a sing
 the angle between the two sensor views, as illustrated in the picture below. In the two-views setting, you want to 
 register the two point clouds together before sending them to GPD.
 
-<img src="readme/view_angle.png" alt="Angle Between Sensor Views"/>
+![rviz screenshot](readme/view_angle.png "Angle Between Sensor Views")
 
 To switch between one and two sensor views, change the parameter *trained_file* in the launch file 
 *launch/caffe/ur5_15channels.launch*.
