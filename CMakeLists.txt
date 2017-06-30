@@ -224,7 +224,8 @@ target_link_libraries(${PROJECT_NAME}_sequential_importance_sampling
 target_link_libraries(${PROJECT_NAME}_test_occlusion
                       ${PROJECT_NAME}_learning
                       ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+                      ${catkin_LIBRARIES}
+                      ${PCL_LIBRARIES} 
                       ${Caffe_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}_learning
