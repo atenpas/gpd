@@ -43,7 +43,7 @@ Linux distributions that support ROS.
 [CMake Build instructions](http://caffe.berkeleyvision.org/installation.html#cmake-build). **Notice for Ubuntu 14.04:** 
 Due to a conflict between the Boost version required by Caffe (1.55) and the one installed as a dependency with the 
 Debian package for ROS Indigo (1.54), you need to checkout an older version of Caffe that worked with Boost 1.54. So, 
-when you clone Caffe, please use the commands below.
+when you clone Caffe, please use this command.
    
     ```
     git clone https://github.com/BVLC/caffe.git && cd caffe
