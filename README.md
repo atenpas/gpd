@@ -139,7 +139,11 @@ to achieve better runtime for a loss in grasp quality. For more details, please 
 
 ## 10) Citation
 
-If you like this package and use it in your own work, please cite our paper:
+If you like this package and use it in your own work, please cite our paper(s):
 
-[1] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, Robert Platt. [**High precision grasp pose detection in dense clutter.**](http://arxiv.org/abs/1603.01564) IROS 2016. 598-605.
+[1] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, and Robert Platt. [**High precision grasp pose detection in dense 
+clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
+
+[2] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp Pose Detection in Point 
+Clouds**](http://arxiv.org/abs/1706.09911). To appear in IJRR.
 
