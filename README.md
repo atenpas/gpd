@@ -145,5 +145,5 @@ If you like this package and use it in your own work, please cite our paper(s):
 clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
 
 [2] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp Pose Detection in Point 
-Clouds**](http://arxiv.org/abs/1706.09911). To appear in IJRR.
+Clouds**](http://arxiv.org/abs/1706.09911). Conditionally accepted for IJRR.
 
