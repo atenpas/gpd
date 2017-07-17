@@ -45,7 +45,6 @@ To find the nonplanar indices, we first do a
 [least squares fit](https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf) of the points to a plane, and 
 then we select the points that are at least a minimum distance away from that fitted plane.
 ```python
-# Extract the nonplanar indices. Uses a least squares fit Ax = b.
 import numpy as np
 from scipy.linalg import lstsq
 
