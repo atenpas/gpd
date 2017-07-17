@@ -41,18 +41,20 @@ while len(cloud) == 0:
     rospy.sleep(0.01)
 ```
 
-To find the nonplanar indices, we do a least squares fit of the points to a plane.
+To find the nonplanar indices, we first do a 
+[least squares fit](https://www.geometrictools.com/Documentation/LeastSquaresFitting.pdf) of the points to a plane, and 
+then we select the points that are at least a minimum distance away from that fitted plane.
 ```python
-# Extract the nonplanar indices. Uses a least squares fit AX = b. Plane equation: z = ax + by + c.
+# Extract the nonplanar indices. Uses a least squares fit Ax = b.
 import numpy as np
 from scipy.linalg import lstsq
 
 cloud = np.asarray(cloud)
-X = cloud
-A = np.c_[X[:,0], X[:,1], np.ones(X.shape[0])]
-C, _, _, _ = lstsq(A, X[:,2])
+A = np.c_[cloud[:,0], cloud[:,1], np.ones(cloud.shape[0])]
+b = cloud[:,2]
+C, _, _, _ = lstsq(A, b)
 a, b, c, d = C[0], C[1], -1., C[2] # coefficients of the form: a*x + b*y + c*z + d = 0.
-dist = ((a*X[:,0] + b*X[:,1] + d) - X[:,2])**2
+dist = ((a*cloud[:,0] + b*cloud[:,1] + d) - cloud[:,2])**2
 err = dist.sum()
 idx = np.where(dist > 0.01)
 ```
