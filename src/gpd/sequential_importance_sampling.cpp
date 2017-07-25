@@ -24,11 +24,14 @@ SequentialImportanceSampling::SequentialImportanceSampling(ros::NodeHandle& node
   node.param("prob_rand_samples", prob_rand_samples_, PROB_RAND_SAMPLES);
   node.param("std", radius_, RADIUS);
   node.param("sampling_method", sampling_method_, SAMPLING_METHOD);
+  node.param("visualize_rounds", visualize_rounds_, false);
   node.param("visualize_steps", visualize_steps_, VISUALIZE_STEPS);
   node.param("visualize_results", visualize_results_, VISUALIZE_RESULTS);
   node.param("filter_grasps", filter_grasps_, false);
+  node.param("num_threads", num_threads_, 1);
 
-  node.getParam("workspace_grasps", workspace_);
+  node.getParam("workspace", workspace_);
+  node.getParam("workspace_grasps", workspace_grasps_);
 
   grasp_detector_ = new GraspDetector(node);
 }
@@ -36,6 +39,14 @@ SequentialImportanceSampling::SequentialImportanceSampling(ros::NodeHandle& node
 
 std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera& cloud_cam_in)
 {
+  // Check if the point cloud is empty.
+  if (cloud_cam_in.getCloudOriginal()->size() == 0)
+  {
+    ROS_INFO("Point cloud is empty!");
+    std::vector<Grasp> grasps(0);
+    return grasps;
+  }
+
   double t0 = omp_get_wtime();
   CloudCamera cloud_cam = cloud_cam_in;
   Plot plotter;
@@ -55,11 +66,11 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   std::vector<GraspSet> filtered_candidates;
   if (filter_grasps_)
   {
-    grasp_detector_->filterGraspsWorkspace(hand_set_list, workspace_);
-    ROS_INFO_STREAM("Number of grasps within gripper width range and workspace: " << filtered_candidates.size());
+    grasp_detector_->filterGraspsWorkspace(hand_set_list, workspace_grasps_);
+    ROS_INFO_STREAM("Number of grasps within workspace: " << filtered_candidates.size());
   }
 
-  if (visualize_steps_)
+  if (visualize_rounds_)
   {
     plotter.plotFingers(hand_set_list, cloud_cam.getCloudOriginal(), "Initial Grasps");
   }
@@ -133,13 +144,13 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 
     if (filter_grasps_)
     {
-      grasp_detector_->filterGraspsWorkspace(hand_set_list_new, workspace_);
+      grasp_detector_->filterGraspsWorkspace(hand_set_list_new, workspace_grasps_);
       ROS_INFO_STREAM("Number of grasps within gripper width range and workspace: " << hand_set_list_new.size());
     }
 
     hand_set_list.insert(hand_set_list.end(), hand_set_list_new.begin(), hand_set_list_new.end());
 
-    if (visualize_steps_)
+    if (visualize_rounds_)
     {
       plotter.plotSamples(samples, cloud);
       plotter.plotFingers(hand_set_list_new, cloud_cam.getCloudProcessed(), "New Grasps");
@@ -147,6 +158,10 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 
     std::cout << "Added: " << hand_set_list_new.size() << ", total: " << hand_set_list.size()
       << " grasp candidate sets in round " << i << std::endl;
+  }
+  if (visualize_steps_)
+  {
+    plotter.plotFingers(hand_set_list, cloud_cam.getCloudOriginal(), "Grasp Candidates");
   }
 
   // Classify the grasps.
@@ -160,8 +175,10 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 
   // 4. Cluster the grasps.
   valid_grasps = grasp_detector_->findClusters(valid_grasps);
-  std::cout << "Final result: found " << valid_grasps.size() << " clusters in " << omp_get_wtime() - t0 << " sec.\n";
-  if (visualize_results_)
+  std::cout << "Final result: found " << valid_grasps.size() << " clusters.\n";
+  std::cout << "Total runtime: " << omp_get_wtime() - t0 << " sec.\n";
+  
+  if (visualize_results_ || visualize_steps_)
   {
     plotter.plotFingers(valid_grasps, cloud_cam.getCloudOriginal(), "Clusters");
   }
@@ -178,6 +195,17 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 //  std::copy(unique_grasps.begin(), unique_grasps.end(), classified_grasps.begin());
 
   return valid_grasps;
+}
+
+
+void SequentialImportanceSampling::preprocessPointCloud(CloudCamera& cloud_cam)
+{
+  std::cout << "Processing cloud with: " << cloud_cam.getCloudOriginal()->size() << " points.\n";
+  cloud_cam.filterWorkspace(workspace_);
+  std::cout << "After workspace filtering: " << cloud_cam.getCloudProcessed()->size() << " points left.\n";
+  cloud_cam.voxelizeCloud(0.003);
+  std::cout << "After voxelizing: " << cloud_cam.getCloudProcessed()->size() << " points left.\n";
+  cloud_cam.calculateNormals(num_threads_);
 }
 
 

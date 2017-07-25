@@ -12,8 +12,7 @@
   
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
-    <!-- Where the point cloud is stored -->    
-
+    <!-- Where the point cloud is stored -->
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
     
     <!-- Plotting parameters -->

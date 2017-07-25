@@ -86,6 +86,12 @@ public:
   std::vector<Grasp> detectGrasps(const CloudCamera& cloud_cam_in);
 
   /**
+   * Preprocess the point cloud (workspace filtering, voxelization, surface normals).
+   * \param cloud_cam the point cloud
+   */
+  void preprocessPointCloud(CloudCamera& cloud_cam);
+
+  /**
    * \brief Compare if two grasps are equal based on their position.
    * \param h1 the first grasp
    * \param h2 the second grasp
@@ -145,12 +151,19 @@ private:
   int num_init_samples_; ///< number of initial samples
   double prob_rand_samples_; ///< probability of random samples
   double radius_; ///< radius
-  bool visualize_steps_; ///< if all iterations are visualized
-  bool visualize_results_; ///< if the results are visualized
   int sampling_method_; ///< what sampling method is used (sum, max, weighted)
 
+  // visualization parameters
+  bool visualize_rounds_; ///< if all iterations are visualized
+  bool visualize_steps_; ///< if all grasp candidates and all valid grasps are visualized
+  bool visualize_results_; ///< if the final results are visualized
+
+  // grasp filtering parameters
   bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace
   std::vector<double> workspace_; ///< the robot's workspace
+  std::vector<double> workspace_grasps_; ///< the robot's workspace
+
+  int num_threads_; ///< number of CPU threads used in grasp detection
 
   // standard parameters
   static const int NUM_ITERATIONS;

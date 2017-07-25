@@ -88,6 +88,7 @@ std::vector<Grasp> Clustering::findClusters(const std::vector<Grasp>& hand_list,
       hand.setGraspTop(hand.getGraspTop() + position_delta);
       // hand.setScore(avg_score);
       hand.setScore(conf_lb);
+      hand.setFullAntipodal(hand_list[i].isFullAntipodal());
       hands_out.push_back(hand);
     }
   }

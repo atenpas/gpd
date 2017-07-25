@@ -70,11 +70,12 @@ int main(int argc, char* argv[])
 
   if (use_importance_sampling)
   {
-//    cloud_camera.filterWorkspace(workspace_);
-//    cloud_cam.voxelizeCloud(0.003);
-    cloud_cam.calculateNormals(4);
-
     SequentialImportanceSampling detector(node);
+
+    // Preprocess the point cloud (voxelize, workspace, etc.).
+    detector.preprocessPointCloud(cloud_cam);
+
+    // Detect grasps in the point cloud.
     std::vector<Grasp> grasps = detector.detectGrasps(cloud_cam);
   }
   else
