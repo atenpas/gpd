@@ -37,9 +37,7 @@
     <param name="voxelize" value="false"/> <!-- Voxelize the point cloud -->
     <param name="remove_outliers" value="false"/> <!-- Remove statistical outliers from the point cloud -->
     <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
-<!--
-    <rosparam param="workspace"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam>
--->
+<!-- <rosparam param="workspace"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam> -->
     <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
 
     <!-- General parameters -->
@@ -49,7 +47,6 @@
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->
     <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
-    <param name="rotation_axis" value="2" /> <!-- 2: curvature axis -->
     
     <!-- Filtering of grasp candidates --> 
     <param name="filter_grasps" value="false" /> <!-- on workspace and robot gripper width -->

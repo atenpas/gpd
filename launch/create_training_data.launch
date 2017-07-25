@@ -39,7 +39,6 @@
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->
     <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
-    <param name="rotation_axis" value="2" /> <!-- 2: curvature axis -->
     
     <!-- Filtering of grasp candidates --> 
     <param name="filter_grasps" value="false" /> <!-- on workspace and robot gripper width -->
