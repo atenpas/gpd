@@ -20,7 +20,8 @@ find_package(OpenCV)
 find_package(message_generation)
 
 find_library(GENERATOR_LIB grasp_candidates_generator)
-# include_directories(${GENERATOR_LIB_INCLUDE_DIRS})
+find_path(GENERATOR_LIB_INCLUDE_DIR gpg/grasp.h)
+include_directories(${GENERATOR_LIB_INCLUDE_DIR})
 
 # CAFFE
 IF(NOT EXISTS ${CAFFE_DIR})
