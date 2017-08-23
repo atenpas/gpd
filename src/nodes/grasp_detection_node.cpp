@@ -161,6 +161,7 @@ void GraspDetectionNode::cloud_callback(const sensor_msgs::PointCloud2& msg)
       PointCloudPointNormal::Ptr cloud(new PointCloudPointNormal);
       pcl::fromROSMsg(msg, *cloud);
       cloud_camera_ = new CloudCamera(cloud, 0, view_points);
+      cloud_camera_header_ = msg.header;
       ROS_INFO_STREAM("Received cloud with " << cloud_camera_->getCloudProcessed()->size() << " points and normals.");
     }
     else
@@ -168,6 +169,7 @@ void GraspDetectionNode::cloud_callback(const sensor_msgs::PointCloud2& msg)
       PointCloudRGBA::Ptr cloud(new PointCloudRGBA);
       pcl::fromROSMsg(msg, *cloud);
       cloud_camera_ = new CloudCamera(cloud, 0, view_points);
+      cloud_camera_header_ = msg.header;
       ROS_INFO_STREAM("Received cloud with " << cloud_camera_->getCloudProcessed()->size() << " points.");
     }
 
@@ -297,7 +299,7 @@ gpd::GraspConfigList GraspDetectionNode::createGraspListMsg(const std::vector<Gr
   for (int i = 0; i < hands.size(); i++)
     msg.grasps.push_back(convertToGraspMsg(hands[i]));
 
-  msg.header.stamp = ros::Time::now();
+  msg.header = cloud_camera_header_;
 
   return msg;
 }
