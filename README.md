@@ -111,7 +111,11 @@ The output should look similar to the screenshot shown below.
 ## 7) Parameters
 
 Brief explanations of parameters are given in *launch/classify_candidates_file_15_channels.launch* for using PCD files. 
-For use on a robot, see *launch/ur5_15_channels.launch*.
+For use on a robot, see *launch/ur5_15_channels.launch*. The two parameters that you typically want to play with to 
+improve on then number of grasps found are *workspace* and *num_samples*. The first defines the volume of space in which 
+to search for grasps as a cuboid of dimensions [minX, maxX, minY, maxY, minZ, maxZ], centered at the origin. The second 
+is the number of samples that are drawn from the point cloud to detect grasps. You should set the workspace as small as 
+possible and the number of samples as large as possible. 
 
 
 ## 8) Views
