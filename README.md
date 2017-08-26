@@ -150,6 +150,6 @@ Clouds**](http://arxiv.org/abs/1706.09911). Conditionally accepted for IJRR.
 
 ## 11) Troubleshooting
 
-* GCC 4.8: The package [might not get compiled](https://github.com/atenpas/gpd/issues/14#issuecomment-324789077) with 
+* GCC 4.8: The package [might not compile](https://github.com/atenpas/gpd/issues/14#issuecomment-324789077) with 
 GCC 4.8. This is due to [a bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58251) in GCC. **Solution:** Upgrade to 
 GCC 4.9. 
