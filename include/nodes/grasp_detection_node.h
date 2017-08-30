@@ -177,6 +177,7 @@ private:
   Eigen::Vector3d view_point_; ///< (input) view point of the camera onto the point cloud
 
   CloudCamera* cloud_camera_; ///< stores point cloud with (optional) camera information and surface normals
+  std_msgs::Header cloud_camera_header_; ///< stores header of the point cloud
 
   int size_left_cloud_; ///< (input) size of the left point cloud (when using two point clouds as input)
   bool has_cloud_, has_normals_, has_samples_; ///< status variables for received (input) messages
