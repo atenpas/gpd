@@ -91,7 +91,7 @@ rosrun rviz rviz
 roslaunch gpd tutorial2.launch
 ```
 
-In *rviz*, load the config file *gpd/tutorials/openni2.rviz*.
+In *rviz*, load the config file *gpd/tutorials/tutorial2.rviz*.
 
 Then, run the *select_grasp.py* node.
 ```
