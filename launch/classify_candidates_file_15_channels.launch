@@ -41,7 +41,7 @@
     <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
 
     <!-- General parameters -->
-    <param name="num_samples" value="4000" /> <!-- The number of samples to draw from the point cloud -->
+    <param name="num_samples" value="5" /> <!-- The number of samples to draw from the point cloud -->
     <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->
     
     <!-- Parameters for local grasp candidate search -->

@@ -139,7 +139,9 @@ std::vector<Grasp> GraspDetector::detectGrasps(const CloudCamera& cloud_cam)
 
     if (plot_filtered_grasps_)
     {
-      plotter.plotFingers(candidates, cloud_cam.getCloudProcessed(), "Filtered Grasps");
+      const HandSearch::Parameters& params = candidates_generator_->getHandSearchParams();
+      plotter.plotFingers3D(candidates, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+        params.finger_width_, params.hand_depth_, params.hand_height_);
     }
   }
 
@@ -150,7 +152,9 @@ std::vector<Grasp> GraspDetector::detectGrasps(const CloudCamera& cloud_cam)
 
     if (plot_filtered_grasps_)
     {
-      plotter.plotFingers(candidates, cloud_cam.getCloudProcessed(), "Filtered Grasps");
+      const HandSearch::Parameters& params = candidates_generator_->getHandSearchParams();
+      plotter.plotFingers3D(candidates, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+        params.finger_width_, params.hand_depth_, params.hand_height_);
     }
   }
 
@@ -179,7 +183,9 @@ std::vector<Grasp> GraspDetector::detectGrasps(const CloudCamera& cloud_cam)
 
     if (plot_clusters_)
     {
-      plotter.plotFingers(clustered_grasps, cloud_cam.getCloudOriginal(), "Clustered Grasps (Original Point Cloud)");
+      const HandSearch::Parameters& params = candidates_generator_->getHandSearchParams();
+      plotter.plotFingers3D(clustered_grasps, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+        params.finger_width_, params.hand_depth_, params.hand_height_);
     }
   }
   else
@@ -211,7 +217,9 @@ std::vector<Grasp> GraspDetector::detectGrasps(const CloudCamera& cloud_cam)
 
   if (plot_selected_grasps_)
   {
-    plotter.plotFingers(selected_grasps, cloud_cam.getCloudOriginal(), "Selected Grasps (Original Point Cloud)");
+    const HandSearch::Parameters& params = candidates_generator_->getHandSearchParams();
+    plotter.plotFingers3D(selected_grasps, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+      params.finger_width_, params.hand_depth_, params.hand_height_);
   }
 
   return selected_grasps;
@@ -312,7 +320,9 @@ std::vector<Grasp> GraspDetector::classifyGraspCandidates(const CloudCamera& clo
   if (plot_valid_grasps_)
   {
     Plot plotter;
-    plotter.plotFingers(valid_grasps, cloud_cam.getCloudOriginal(), "Valid Grasps");
+    const HandSearch::Parameters& params = candidates_generator_->getHandSearchParams();
+    plotter.plotFingers3D(valid_grasps, cloud_cam.getCloudOriginal(), "Valid Grasps", params.hand_outer_diameter_,
+      params.finger_width_, params.hand_depth_, params.hand_height_);
   }
 
   return valid_grasps;
