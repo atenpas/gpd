@@ -12,17 +12,11 @@
   
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
-    <!-- Where the point cloud is stored -->    
+    <!-- Where the point cloud is stored -->
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
-<!--
-    <param name="cloud_file_name" value="/home/ur5/.ros/2017-04-20_21_13_33_cloud.pcd" />
--->
-<!--
-    <param name="cloud_file_name" value="/home/andreas/data/UR5/2017-03-31_19_18_44_cloud.pcd" />
--->
-<!--
-    <param name="cloud_file_name" value="/home/andreas/data/mugs/mug1_cloud.pcd" />
--->
+
+    <!-- <param name="cloud_file_name" value="/home/andreas/data/handle_detector/Baxter/table10.pcd" /> -->
+
     
     <!-- Plotting parameters -->
     <param name="plot_normals" value="true" />
@@ -36,12 +30,12 @@
     <!-- Preprocessing of point cloud -->
     <param name="voxelize" value="false"/> <!-- Voxelize the point cloud -->
     <param name="remove_outliers" value="false"/> <!-- Remove statistical outliers from the point cloud -->
-    <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
-<!-- <rosparam param="workspace"> [0.30, 0.90, -0.30, 0.30, -0.12, 0.40] </rosparam> -->
+    <!-- <rosparam param="workspace"> [-1, 1, -1, 1, 0, 1] </rosparam> -->
+    <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam> -->
     <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
 
     <!-- General parameters -->
-    <param name="num_samples" value="5" /> <!-- The number of samples to draw from the point cloud -->
+    <param name="num_samples" value="500" /> <!-- The number of samples to draw from the point cloud -->
     <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->
     
     <!-- Parameters for local grasp candidate search -->

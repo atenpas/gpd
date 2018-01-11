@@ -55,7 +55,7 @@ GraspDetector::GraspDetector(ros::NodeHandle& node)
   node.param("min_score_diff", min_score_diff_, 500.0);
   node.param("create_image_batches", create_image_batches_, true);
   node.param("use_gpu", use_gpu, true);
-  classifier_ = new CaffeClassifier(model_file, weights_file, use_gpu);
+  classifier_ = new Lenet(generator_params.num_threads_);
 
   // Read grasp image parameters.
   node.param("image_outer_diameter", image_params_.outer_diameter_, hand_search_params.hand_outer_diameter_);
@@ -251,37 +251,37 @@ std::vector<Grasp> GraspDetector::classifyGraspCandidates(const CloudCamera& clo
   // Create images in batches if required (less memory usage).
   if (create_image_batches_)
   {
-    int batch_size = classifier_->getBatchSize();
-    int num_iterations = (int) ceil(candidates.size() * num_orientations / (double) batch_size);
-    int step_size = (int) floor(batch_size / (double) num_orientations);
-    std::cout << " num_iterations: " << num_iterations << ", step_size: " << step_size << "\n";
-
-    // Process the grasp candidates in batches.
-    for (int i = 0; i < num_iterations; i++)
-    {
-      std::cout << i << "\n";
-      std::vector<GraspSet>::iterator start = candidates.begin() + i * step_size;
-      std::vector<GraspSet>::iterator stop;
-      if (i < num_iterations - 1)
-      {
-        stop = candidates.begin() + i * step_size + step_size;
-      }
-      else
-      {
-        stop = candidates.end();
-      }
-
-      std::vector<GraspSet> hand_set_sublist(start, stop);
-      std::vector<cv::Mat> image_list = learning_->createImages(cloud_cam, hand_set_sublist);
-
-      std::vector<Grasp> valid_grasps;
-      std::vector<cv::Mat> valid_images;
-      extractGraspsAndImages(candidates, image_list, valid_grasps, valid_images);
-
-      std::vector<float> scores_sublist = classifier_->classifyImages(valid_images);
-      scores.insert(scores.end(), scores_sublist.begin(), scores_sublist.end());
-      grasp_list.insert(grasp_list.end(), valid_grasps.begin(), valid_grasps.end());
-    }
+//    int batch_size = classifier_->getBatchSize();
+//    int num_iterations = (int) ceil(candidates.size() * num_orientations / (double) batch_size);
+//    int step_size = (int) floor(batch_size / (double) num_orientations);
+//    std::cout << " num_iterations: " << num_iterations << ", step_size: " << step_size << "\n";
+//
+//    // Process the grasp candidates in batches.
+//    for (int i = 0; i < num_iterations; i++)
+//    {
+//      std::cout << i << "\n";
+//      std::vector<GraspSet>::iterator start = candidates.begin() + i * step_size;
+//      std::vector<GraspSet>::iterator stop;
+//      if (i < num_iterations - 1)
+//      {
+//        stop = candidates.begin() + i * step_size + step_size;
+//      }
+//      else
+//      {
+//        stop = candidates.end();
+//      }
+//
+//      std::vector<GraspSet> hand_set_sublist(start, stop);
+//      std::vector<cv::Mat> image_list = learning_->createImages(cloud_cam, hand_set_sublist);
+//
+//      std::vector<Grasp> valid_grasps;
+//      std::vector<cv::Mat> valid_images;
+//      extractGraspsAndImages(candidates, image_list, valid_grasps, valid_images);
+//
+//      std::vector<float> scores_sublist = classifier_->classifyImages(valid_images);
+//      scores.insert(scores.end(), scores_sublist.begin(), scores_sublist.end());
+//      grasp_list.insert(grasp_list.end(), valid_grasps.begin(), valid_grasps.end());
+//    }
   }
   else
   {

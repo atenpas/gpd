@@ -24,8 +24,8 @@ void Learning::extractGraspsAndImages(const std::vector<GraspSet>& hand_set_list
 }
 
 
-std::vector<cv::Mat> Learning::createImages(const CloudCamera& cloud_cam,
-  const std::vector<GraspSet>& hand_set_list) const
+std::vector<cv::Mat> Learning::createImages(const CloudCamera& cloud_cam, const std::vector<GraspSet>& hand_set_list)
+  const
 {
   double t0_total = omp_get_wtime();
 

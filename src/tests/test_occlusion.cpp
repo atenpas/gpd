@@ -3,16 +3,7 @@
 #include <gpg/grasp.h>
 #include <gpg/plot.h>
 
-#include "caffe/caffe.hpp"
-#include "caffe/util/io.hpp"
-#include "caffe/blob.hpp"
-#include "caffe/layers/memory_data_layer.hpp"
-#include "caffe/layers/input_layer.hpp"
-
-#include "../../include/gpd/learning.h"
-
-
-using namespace caffe;
+#include <gpd/learning.h>
 
 
 int main(int argc, char* argv[])
@@ -119,48 +110,6 @@ int main(int argc, char* argv[])
   std::cout << "------------\n" << images[0].rows << " x " << images[0].cols << " x " << images[0].channels() << "\n";
 
   // Predict if the grasp candidate is a good grasp or not.
-  Caffe::set_mode(Caffe::GPU);
-   std::string root = "/home/andreas/catkin_ws/src/gpd/caffe/";
-  // std::string root = "/home/baxter/baxter_ws/src/gpd/caffe/";
-  std::string model_file = root + "15channels/lenet_15_channels.prototxt";
-  std::string weights_file = root + "15channels/two_views_15_channels_90_deg.caffemodel";
-  std::string labels_file = root + "labels.txt";
-
-  caffe::Net<float> net(model_file, caffe::TEST);
-  net.CopyTrainedLayersFrom(weights_file);
-
-  float loss = 0.0;
-  std::vector<int> label_list;
-  label_list.push_back(0);
-
-  boost::shared_ptr<caffe::MemoryDataLayer<float> > memory_data_layer;
-  memory_data_layer = boost::static_pointer_cast < caffe::MemoryDataLayer < float > >(net.layer_by_name("data"));
-
-  std::cout << "#images: " << images.size() << "\n";
-
-  for (int i = images.size(); i < memory_data_layer->batch_size(); i++)
-  {
-    images.push_back(cv::Mat(60, 60, CV_8UC(15), cv::Scalar(0)));
-    label_list.push_back(0);
-  }
-
-  memory_data_layer->AddMatVector(images, label_list);
-
-  std::vector<Blob<float>*> results = net.Forward(&loss);
-  std::cout << "loss: " << loss << "\n";
-
-  boost::shared_ptr<caffe::Blob<float> > output_layer;
-  output_layer = net.blob_by_name("ip2");
-  std::cout << "output_layer->channels(): " << output_layer->channels() << "\n";
-
-  const float* begin = results[0]->cpu_data();
-  const float* end = begin + results[0]->count();
-  std::vector<float> out(begin, end);
-
-  for (int l = 0; l < results[0]->count() / results[0]-> channels(); l++)
-  {
-    std::cout << "Score (positive): " << out[2 * l + 1] << ", score (negative): " << out[2 * l] << "\n";
-  }
 
   return 0;
 }

@@ -62,7 +62,7 @@
 #include <gpg/grasp.h>
 #include <gpg/grasp_set.h>
 
-#include "../gpd/grasp_image_15_channels.h"
+#include <gpd/grasp_image_15_channels.h>
 
 
 typedef std::pair<Eigen::Matrix3Xd, Eigen::Matrix3Xd> Matrix3XdPair;
