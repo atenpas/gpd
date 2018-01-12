@@ -223,50 +223,6 @@ std::vector<cv::Mat> Learning::createImages15Channels(const std::vector<GraspSet
   std::cout << "time to calculate " << num_images << " images with " << num_threads_ << " threads: "
     << omp_get_wtime() - t0_shadows << "s\n";
   return images;
-
-//#ifdef _OPENMP // parallelization using OpenMP
-//#pragma omp parallel for num_threads(num_threads_)
-//#endif
-//  for (int i = 0; i < nn_points_list.size(); i++)
-//  {
-//    if (is_valid[i])
-//    {
-//      shadows[i] = hand_set_list[i].calculateShadow4(nn_points_list[i], shadow_length);
-//    }
-//  }
-//
-//  std::cout << "time to calculate " << nn_points_list.size() << " shadows with " << num_threads_ << " threads: " << omp_get_wtime() - t0_shadows << "s\n";
-//
-//  // 2. Calculate the grasp images.
-//  double t0_images = omp_get_wtime();
-//  std::vector<cv::Mat> images(hand_set_list.size() * num_orientations_, cv::Mat(60, 60, CV_8UC(15), cv::Scalar(0.0)));
-//  int num_images = 0;
-//
-//#ifdef _OPENMP // parallelization using OpenMP
-//#pragma omp parallel for num_threads(num_threads_)
-//#endif
-//  for (int i = 0; i < hand_set_list.size(); i++)
-//  {
-//    if (is_valid[i])
-//    {
-//      const std::vector<Grasp>& hands = hand_set_list[i].getHypotheses();
-//
-//      for (int j = 0; j < hands.size(); j++)
-//      {
-//        if (hand_set_list[i].getIsValid()(j))
-//        {
-//          const int idx = i * num_orientations_ + j;
-//          images[idx] = createImage15Channels(nn_points_list[i], shadows[i], hands[j]);
-//          num_images++;
-//        }
-//      }
-//    }
-//  }
-//
-//  std::cout << "time to calculate " << num_images << " images with " << num_threads_ << " threads: " << omp_get_wtime() - t0_images << "s\n";
-////  std::cout << "==> total time to create images: " << omp_get_wtime() - t0_total << "s\n";
-//
-//  return images;
 }
 
 
