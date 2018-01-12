@@ -5,8 +5,8 @@
     <arg name="node" value="classify_grasp_candidates" />
   </include>
   
-  <!-- Load classifier parameters -->  
-  <include file="$(find gpd)/launch/caffe/ur5_classifier_15channels.launch">
+  <!-- Load classifier parameters -->
+  <include file="$(find gpd)/launch/lenet/ur5_classifier_15channels.launch">
     <arg name="node" value="classify_grasp_candidates" />
   </include>
   

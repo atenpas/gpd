@@ -1,7 +1,7 @@
 #include <gpd/lenet.h>
 
 
-Lenet::Lenet(int num_threads) : num_threads_(num_threads)
+Lenet::Lenet(int num_threads, const std::string& params_dir) : num_threads_(num_threads)
 {
   double start = omp_get_wtime();
 
@@ -20,7 +20,6 @@ Lenet::Lenet(int num_threads) : num_threads_(num_threads)
   dense2 = new DenseLayer(2);
 
   // Set weights and biases.
-  std::string params_dir = "/home/andreas/projects/grasp_pose_detection/catkin_ws/src/gpd/caffe/15channels/bin/";
   std::vector<float> w_vec = readBinaryFileIntoVector(params_dir + "conv1_0.bin");
   std::vector<float> b_vec = readBinaryFileIntoVector(params_dir + "conv1_1.bin");
   conv1->setWeightsAndBiases(w_vec, b_vec);
@@ -37,6 +36,10 @@ Lenet::Lenet(int num_threads) : num_threads_(num_threads)
   std::vector<float> b_dense2 = readBinaryFileIntoVector(params_dir + "dense2_1.bin");
 
   dense2->setWeightsAndBiases(w_dense2, b_dense2);
+
+  x_conv2.resize(20*28*28);
+  x_dense1.resize(50*12*12);
+  x_dense2.resize(2*500);
 
   std::cout << "NET SETUP runtime: " << omp_get_wtime() - start << std::endl;
 }
@@ -84,7 +87,7 @@ std::vector<float> Lenet::classifyImages(const std::vector<cv::Mat>& image_list)
 }
 
 
-std::vector<float> Lenet::forward(const std::vector<float>& x) const
+std::vector<float> Lenet::forward(const std::vector<float>& x)
 {
 //  double start = omp_get_wtime();
 
@@ -95,10 +98,12 @@ std::vector<float> Lenet::forward(const std::vector<float>& x) const
   Eigen::MatrixXf P1 = poolForward(H1, 2, 2);
 
   // 2nd conv layer
+  double conv2_start = omp_get_wtime();
   Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> P1r(P1);
-  std::vector<float> x_conv2;
+//  std::vector<float> x_conv2;
   x_conv2.assign(P1r.data(), P1r.data() + P1r.size());
   Eigen::MatrixXf H2 = conv2->forward(x_conv2);
+//  std::cout << "CONV2 runtime: " << omp_get_wtime() - conv2_start << std::endl;
 
   // 2nd max pool layer
   Eigen::MatrixXf P2 = poolForward(H2, 2, 2);
@@ -107,18 +112,16 @@ std::vector<float> Lenet::forward(const std::vector<float>& x) const
   Eigen::Map<Eigen::VectorXf> f1(P2.data(), P2.size());
 
   // 1st inner product layer
-  std::vector<float> x_dense1;
-  x_dense1.resize(f1.size());
+//  double dense1_start = omp_get_wtime();
   Eigen::VectorXf::Map(&x_dense1[0], f1.size()) = f1;
   Eigen::MatrixXf H3 = dense1->forward(x_dense1);
+//  std::cout << "DENSE1 runtime: " << omp_get_wtime() - dense1_start << std::endl;
 
   // RELU layer
   H3 = H3.cwiseMax(0);
 
   // 2nd inner product layer (output layer)
-  std::vector<float> x_dense2;
   Eigen::Map<Eigen::VectorXf> f2(H3.data(), H3.size());
-  x_dense2.resize(f2.size());
   Eigen::VectorXf::Map(&x_dense2[0], f2.size()) = f2;
   Eigen::MatrixXf Y = dense2->forward(x_dense2);
 
@@ -176,7 +179,10 @@ std::vector<float> Lenet::readFileLineByLineIntoVector(const std::string& locati
   file.open(location.c_str());
   std::vector<float> vals;
   while (std::getline (file, line))
+  {
     vals.push_back(atof(line.c_str()));
+  }
+
   return vals;
 }
 
@@ -201,4 +207,3 @@ std::vector<float> Lenet::readBinaryFileIntoVector(const std::string& location)
 
   return vals;
 }
-

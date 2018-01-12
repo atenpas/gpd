@@ -1,4 +1,4 @@
-#include "../../include/gpd/learning.h"
+#include <gpd/learning.h>
 
 
 void Learning::extractGraspsAndImages(const std::vector<GraspSet>& hand_set_list, const std::vector<cv::Mat>& images,

@@ -1,4 +1,4 @@
-#include "../../include/gpd/grasp_detector.h"
+#include <gpd/grasp_detector.h>
 
 
 GraspDetector::GraspDetector(ros::NodeHandle& node)
@@ -48,14 +48,11 @@ GraspDetector::GraspDetector(ros::NodeHandle& node)
   candidates_generator_ = new CandidatesGenerator(generator_params, hand_search_params);
 
   // Read classification parameters and create classifier.
-  std::string model_file, weights_file;
-  bool use_gpu;
-  node.param("model_file", model_file, std::string(""));
-  node.param("trained_file", weights_file, std::string(""));
+  std::string lenet_params_dir;
+  node.param("lenet_params_dir", lenet_params_dir, std::string(""));
   node.param("min_score_diff", min_score_diff_, 500.0);
   node.param("create_image_batches", create_image_batches_, true);
-  node.param("use_gpu", use_gpu, true);
-  classifier_ = new Lenet(generator_params.num_threads_);
+  classifier_ = new Lenet(generator_params.num_threads_, lenet_params_dir);
 
   // Read grasp image parameters.
   node.param("image_outer_diameter", image_params_.outer_diameter_, hand_search_params.hand_outer_diameter_);

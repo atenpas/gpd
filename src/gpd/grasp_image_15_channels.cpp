@@ -1,4 +1,4 @@
-#include "../../include/gpd/grasp_image_15_channels.h"
+#include <gpd/grasp_image_15_channels.h>
 
 
 const int GraspImage15Channels::NUM_CHANNELS = 15;

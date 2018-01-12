@@ -1,4 +1,4 @@
-#include "../../include/gpd/grasp_image.h"
+#include <gpd/grasp_image.h>
 
 
 int GraspImage::image_size_;

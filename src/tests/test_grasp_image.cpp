@@ -23,9 +23,6 @@ int main(int argc, char* argv[])
   view_points.setZero();
 
   // Load point cloud from file
-  //  std::string filename = "/media/andreas/2a9b7d00-f8c3-4849-9ddc-283f5b7c206a/data/object_datasets/bb_onesource/pcd/vo5_tea_therapy_healthful_green_tea_smoothing_shampoo_1_bin.pcd";
-//   std::string filename = "/home/andreas/data/bigbird/3m_high_track_spray_adhesive/clouds/NP1_0.pcd";
-  // std::string filename = "/home/baxter/data/bigbird/3m_high_tack_spray_adhesive/clouds/NP1_0.pcd";
   std::string filename = argv[1];
   CloudCamera cloud_cam(filename, view_points);
   if (cloud_cam.getCloudOriginal()->size() == 0)
@@ -86,10 +83,6 @@ int main(int argc, char* argv[])
   image_params.size_ = 60;
   image_params.num_channels_ = 15;
 
-  // Voxelize (downsample) the point cloud.
-//  cloud_cam.voxelizeCloud(0.0003);
-//  std::cout << "Voxelized point cloud down to " << cloud_cam.getCloudProcessed()->size() << " points.\n";
-
   // Calculate surface normals.
   cloud_cam.calculateNormals(4);
   cloud_cam.setNormals(cloud_cam.getNormals()*(-1.0)); // trick for GT
@@ -105,16 +98,6 @@ int main(int argc, char* argv[])
   std::cout << hand_set_list[0].getHypotheses()[0].getFrame() << std::endl;
   std::cout << "bottom: " << hand_set_list[0].getHypotheses()[0].getGraspBottom().transpose() << std::endl;
 
-//  std::vector<Grasp> hands;
-//  hands.push_back(hand);
-//
-//  GraspSet hand_set;
-//  hand_set.setHands(hand_set_list[0].getHypotheses()[0]);
-//  hand_set.setSample(sample);
-//
-//  std::vector<GraspSet> hand_set_list_test;
-//  hand_set_list_test.push_back(hand_set);
-
   // Create the image for this grasp candidate.
   bool plot_images = true;
   if (argc >= 4)
@@ -125,7 +108,7 @@ int main(int argc, char* argv[])
   std::vector<cv::Mat> images = learn.createImages(cloud_cam, hand_set_list);
 
   // Classify the grasp images.
-  Lenet net(1);
+  Lenet net(1, "/home/andreas/projects/grasp_pose_detection/catkin_ws/src/gpd/caffe/15channels/bin/");
   std::vector<float> scores2 = net.classifyImages(images);
 
   std::cout << "Scores: ";

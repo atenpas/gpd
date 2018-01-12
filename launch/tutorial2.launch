@@ -5,8 +5,8 @@
     <arg name="node" value="detect_grasps" />
   </include>
   
-  <!-- Load classifier parameters -->  
-  <include file="$(find gpd)/launch/caffe/classifier_15channels.launch">
+  <!-- Load classifier parameters -->
+  <include file="$(find gpd)/launch/lenet/ur5_classifier_15channels.launch">
     <arg name="node" value="detect_grasps" />
   </include>
   
