@@ -159,8 +159,9 @@ GCC 4.8. This is due to [a bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=582
 GCC 4.9. 
 
 * During `catkin_make`, you get this error: *[...]/caffe/include/caffe/util/cudnn.hpp:8:34: fatal error: caffe/proto/caffe.pb.h: No such file or directory*. **Solution:**
-    
+    ```
     # In the directory you installed Caffe to
     protoc src/caffe/proto/caffe.proto --cpp_out=.
     mkdir include/caffe/proto
     mv src/caffe/proto/caffe.pb.h include/caffe/proto
+    ```
