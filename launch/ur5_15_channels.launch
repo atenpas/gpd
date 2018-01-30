@@ -60,7 +60,7 @@
     <param name="min_inliers" value="0" />
         
     <!-- Grasp selection -->
-    <param name="min_score_diff" value="50" />
+    <param name="min_score_diff" value="100" />
     <param name="min_aperture" value="0.0" />
     <param name="max_aperture" value="0.085" />
     <param name="num_selected" value="100" />

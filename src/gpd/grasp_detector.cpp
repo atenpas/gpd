@@ -302,6 +302,8 @@ std::vector<Grasp> GraspDetector::classifyGraspCandidates(const CloudCamera& clo
 
   for (int i = 0; i < grasp_list.size(); i++)
   {
+    std::cout << "grasp #" << i << ", score: " << scores[i] << "\n";
+    
     if (scores[i] >= min_score_diff_)
     {
       std::cout << "grasp #" << i << ", score: " << scores[i] << "\n";

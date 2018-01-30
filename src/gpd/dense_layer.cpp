@@ -1,4 +1,5 @@
 #include <gpd/dense_layer.h>
+#include <math.h>
 
 
 Eigen::MatrixXf DenseLayer::forward(const std::vector<float>& x) const

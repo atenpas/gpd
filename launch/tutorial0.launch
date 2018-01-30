@@ -32,7 +32,7 @@
 
     <!-- General parameters -->
     <param name="num_samples" value="10" /> <!-- The number of samples to draw from the point cloud -->
-    <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->
+    <param name="num_threads" value="1" /> <!-- The number of CPU threads to be used -->
     
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->

@@ -39,7 +39,7 @@ Lenet::Lenet(int num_threads, const std::string& params_dir) : num_threads_(num_
 
   x_conv2.resize(20*28*28);
   x_dense1.resize(50*12*12);
-  x_dense2.resize(2*500);
+  x_dense2.resize(500);
 
   std::cout << "NET SETUP runtime: " << omp_get_wtime() - start << std::endl;
 }
@@ -183,6 +183,8 @@ std::vector<float> Lenet::readFileLineByLineIntoVector(const std::string& locati
     vals.push_back(atof(line.c_str()));
   }
 
+  file.close();
+
   return vals;
 }
 
@@ -204,6 +206,8 @@ std::vector<float> Lenet::readBinaryFileIntoVector(const std::string& location)
   {
     vals.push_back(x);
   }
+
+  file.close();
 
   return vals;
 }
