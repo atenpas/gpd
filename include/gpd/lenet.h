@@ -73,6 +73,8 @@ class Lenet
 
     Eigen::MatrixXf poolForward(const Eigen::MatrixXf& X, int filter_size, int stride) const;
 
+    std::vector<float> imageToArray(const cv::Mat& img) const;
+
     ConvLayer* conv1;
     ConvLayer* conv2;
     DenseLayer* dense1;

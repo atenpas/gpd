@@ -24,7 +24,7 @@ find_path(GENERATOR_LIB_INCLUDE_DIR gpg/grasp.h)
 include_directories(${GENERATOR_LIB_INCLUDE_DIR})
 
 ## Set compiler optimization flags
-set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp")
+set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp -Wno-deprecated -Wenum-compare")
 #set(CMAKE_CXX_FLAGS "-DNDEBUG -march=native -O3 -fopenmp")
 # set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp -flto -mavx -mfma -Wno-deprecated -Wenum-compare")
 

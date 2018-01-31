@@ -40,8 +40,8 @@
     <rosparam param="camera_position"> [0, 0, 0] </rosparam>
             
     <!-- General parameters -->
-    <param name="num_samples" value="1000" />
-    <param name="num_threads" value="8" />
+    <param name="num_samples" value="500" />
+    <param name="num_threads" value="12" />
     
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" />
@@ -55,12 +55,14 @@
     <!-- Grasp image creation -->
     <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
     <param name="remove_plane_before_image_calculation" value="true" /> <!-- removes table plane from point cloud to speed up shadow computations -->
+    
+    <!-- Score thresholding of grasp candidates -->
+    <param name="min_score_diff" value="-500" />
         
     <!-- Clustering of grasps -->
-    <param name="min_inliers" value="0" />
+    <param name="min_inliers" value="1" />
         
-    <!-- Grasp selection -->
-    <param name="min_score_diff" value="100" />
+    <!-- Grasp selection -->    
     <param name="min_aperture" value="0.0" />
     <param name="max_aperture" value="0.085" />
     <param name="num_selected" value="100" />

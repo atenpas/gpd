@@ -195,7 +195,6 @@ std::vector<cv::Mat> Learning::createImages15Channels(const std::vector<GraspSet
   double shadow_length = image_dims.maxCoeff();
 
   std::vector<cv::Mat> images(hand_set_list.size() * num_orientations_, cv::Mat(60, 60, CV_8UC(15), cv::Scalar(0.0)));
-  int num_images = 0;
 
 #ifdef _OPENMP // parallelization using OpenMP
 #pragma omp parallel for num_threads(num_threads_)
@@ -214,14 +213,11 @@ std::vector<cv::Mat> Learning::createImages15Channels(const std::vector<GraspSet
         {
           const int idx = i * num_orientations_ + j;
           images[idx] = createImage15Channels(nn_points_list[i], shadow, hands[j]);
-          num_images++;
         }
       }
     }
   }
 
-  std::cout << "time to calculate " << num_images << " images with " << num_threads_ << " threads: "
-    << omp_get_wtime() - t0_shadows << "s\n";
   return images;
 }
 

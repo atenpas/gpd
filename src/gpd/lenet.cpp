@@ -47,8 +47,6 @@ Lenet::Lenet(int num_threads, const std::string& params_dir) : num_threads_(num_
 
 std::vector<float> Lenet::classifyImages(const std::vector<cv::Mat>& image_list)
 {
-  std::vector<float> x;
-  x.resize(15*60*60);
   std::vector<float> y;
   y.resize(image_list.size());
 
@@ -59,26 +57,10 @@ std::vector<float> Lenet::classifyImages(const std::vector<cv::Mat>& image_list)
   {
     if (image_list[i].isContinuous())
     {
-      int k = 0;
-
-      for (int channel = 0; channel < 15; channel++)
-      {
-        for (int row = 0; row < image_list[i].rows; row++)
-        {
-          const uchar* ptr = image_list[i].ptr(row);
-
-          for (int col = 0; col < image_list[i].cols; col++)
-          {
-              const uchar* uc_pixel = ptr;
-              x[k] = uc_pixel[channel];
-              ptr += 15;
-              k++;
-          }
-        }
-      }
+      std::vector<float> x = imageToArray(image_list[i]);
 
       std::vector<float> yi = forward(x);
-//      std::cout << "positive score: " << yi[1] << ", negative score: " << yi[0] << "\n";
+//      std::cout << i << " -- positive score: " << yi[1] << ", negative score: " << yi[0] << "\n";
       y[i] = yi[1] - yi[0];
     }
   }
@@ -210,4 +192,30 @@ std::vector<float> Lenet::readBinaryFileIntoVector(const std::string& location)
   file.close();
 
   return vals;
+}
+
+
+std::vector<float> Lenet::imageToArray(const cv::Mat& img) const
+{
+  std::vector<float> x;
+  x.resize(img.channels()*img.rows*img.cols);
+  int k = 0;
+
+  for (int channel = 0; channel < img.channels(); channel++)
+  {
+    for (int row = 0; row < img.rows; row++)
+    {
+      const uchar* ptr = img.ptr(row);
+
+      for (int col = 0; col < img.cols; col++)
+      {
+          const uchar* uc_pixel = ptr;
+          x[k] = uc_pixel[channel];
+          ptr += 15;
+          k++;
+      }
+    }
+  }
+
+  return x;
 }

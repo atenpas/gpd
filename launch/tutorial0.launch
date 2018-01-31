@@ -13,7 +13,10 @@
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
     <!-- Where the point cloud is stored -->
+<!--
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
+-->
+    <param name="cloud_file_name" value="/home/ur5/.ros/2018-01-30_16_01_41_stitched_cloud.pcd" />
     
     <!-- Plotting parameters -->
     <param name="plot_normals" value="false" />
@@ -22,7 +25,7 @@
     <param name="plot_filtered_grasps" value="false" />
     <param name="plot_valid_grasps" value="true" />
     <param name="plot_clusters" value="false" />
-    <param name="plot_selected_grasps" value="false" />
+    <param name="plot_selected_grasps" value="true" />
     
     <!-- Preprocessing of point cloud -->
     <param name="voxelize" value="false"/> <!-- Voxelize the point cloud -->
@@ -31,8 +34,8 @@
     <rosparam param="camera_position"> [0, 0, 0] </rosparam> <!-- The position of the camera -->
 
     <!-- General parameters -->
-    <param name="num_samples" value="10" /> <!-- The number of samples to draw from the point cloud -->
-    <param name="num_threads" value="1" /> <!-- The number of CPU threads to be used -->
+    <param name="num_samples" value="1000" /> <!-- The number of samples to draw from the point cloud -->
+    <param name="num_threads" value="4" /> <!-- The number of CPU threads to be used -->
     
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" /> <!-- Radius for the point neighborhood search -->
@@ -47,12 +50,13 @@
     
     <!-- Grasp image creation -->
     <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
+    <param name="remove_plane_before_image_calculation" value="false" /> <!-- removes table plane from point cloud to speed up shadow computations -->
         
     <!-- Clustering of grasps -->
-    <param name="min_inliers" value="10" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
+    <param name="min_inliers" value="1" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
     
     <!-- Grasp selection -->
-    <param name="min_score_diff" value="0" /> <!-- Threshold to sort out grasps with low scores -->
+    <param name="min_score_diff" value="50" /> <!-- Threshold to sort out grasps with low scores -->
     <param name="num_selected" value="100" /> <!-- The number of selected grasps (sorted by score) -->
         
 	</node>
