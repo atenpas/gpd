@@ -87,7 +87,9 @@ void GraspDetectionNode::run()
       // visualize grasps in rviz
       if (use_rviz_)
       {
-        grasps_rviz_pub_.publish(convertToVisualGraspMsg(grasps, 0.1, 0.06, 0.01, 0.02, frame_));
+        const HandSearch::Parameters& params = grasp_detector_->getHandSearchParameters();
+        grasps_rviz_pub_.publish(convertToVisualGraspMsg(grasps, params.hand_outer_diameter_, params.hand_depth_,
+                                                         params.finger_width_, params.hand_height_, frame_));
       }
 
       // reset the system
@@ -330,18 +332,19 @@ visualization_msgs::MarkerArray GraspDetectionNode::convertToVisualGraspMsg(cons
 
   visualization_msgs::MarkerArray marker_array;
   visualization_msgs::Marker left_finger, right_finger, base, approach;
-  Eigen::Vector3d left_bottom, right_bottom, left_top, right_top, left_center, right_center, approach_center;
+  Eigen::Vector3d left_bottom, right_bottom, left_top, right_top, left_center, right_center, approach_center,
+    base_center;
 
   for (int i = 0; i < hands.size(); i++)
   {
-    left_bottom = hands[i].getGraspBottom() + hw * hands[i].getBinormal();
-    right_bottom = hands[i].getGraspBottom() - hw * hands[i].getBinormal();
+    left_bottom = hands[i].getGraspBottom() - (hw - 0.5*finger_width) * hands[i].getBinormal();
+    right_bottom = hands[i].getGraspBottom() + (hw - 0.5*finger_width) * hands[i].getBinormal();
     left_top = left_bottom + hand_depth * hands[i].getApproach();
     right_top = right_bottom + hand_depth * hands[i].getApproach();
-
-    left_center = left_bottom + 0.5 * (left_top - left_bottom) - 0.5 * finger_width * hands[i].getFrame().col(1);
-    right_center = right_bottom + 0.5 * (right_top - right_bottom) + 0.5 * finger_width * hands[i].getFrame().col(1);
-    approach_center = left_bottom + 0.5 * (right_bottom - left_bottom) - 0.04 * hands[i].getFrame().col(0);
+    left_center = left_bottom + 0.5*(left_top - left_bottom);
+    right_center = right_bottom + 0.5*(right_top - right_bottom);
+    base_center = left_bottom + 0.5*(right_bottom - left_bottom) - 0.01*hands[i].getApproach();
+    approach_center = base_center - 0.04*hands[i].getApproach();
 
     base = createHandBaseMarker(left_bottom, right_bottom, hands[i].getFrame(), 0.02, hand_height, i, frame_id);
     left_finger = createFingerMarker(left_center, hands[i].getFrame(), hand_depth, finger_width, hand_height, i*3, frame_id);

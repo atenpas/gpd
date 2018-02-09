@@ -195,7 +195,6 @@ private:
   bool plot_normals_; ///< if normals are plotted
   bool plot_samples_; ///< if samples/indices are plotted
   bool use_rviz_; ///< if rviz is used for visualization instead of PCL
-  int num_selected_; ///< number of selected highest-scoring grasp clusters
   std::vector<double> workspace_; ///< workspace limits
 
   GraspDetector* grasp_detector_; ///< used to run the grasp pose detection

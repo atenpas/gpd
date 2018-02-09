@@ -32,6 +32,7 @@
     <param name="plot_valid_grasps" value="true" />
     <param name="plot_clusters" value="false" />
     <param name="plot_selected_grasps" value="false" />
+    <param name="rviz_topic" value="grasps_rviz" />
     
     <!-- Preprocessing of point cloud -->
     <param name="voxelize" value="false"/> <!-- Voxelize the point cloud -->

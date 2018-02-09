@@ -173,6 +173,11 @@ public:
     return hypothesis1.getScore() > hypothesis2.getScore();
   }
 
+  const HandSearch::Parameters& getHandSearchParameters()
+  {
+    return candidates_generator_->getHandSearchParams();
+  }
+
 
 private:
 
