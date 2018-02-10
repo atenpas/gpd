@@ -11,10 +11,10 @@
 
 int main(int argc, char* argv[])
 {
-  if (argc < 4)
+  if (argc < 5)
   {
     std::cout << "Error: No input point cloud file given!\n";
-    std::cout << "Usage: rosrun gpd test_grasp_image INPUT_FILE SAMPLE_INDEX DRAW_GRASP_IMAGES\n";
+    std::cout << "Usage: rosrun gpd test_grasp_image INPUT_FILE SAMPLE_INDEX DRAW_GRASP_IMAGES LENET_PARAMS_DIR\n";
     return -1;
   }
 
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
   CloudCamera cloud_cam(filename, view_points);
   if (cloud_cam.getCloudOriginal()->size() == 0)
   {
-    std::cout << "Input point cloud is empty or does not exist!\n";
+    std::cout << "Error: Input point cloud is empty or does not exist!\n";
     return (-1);
   }
 
@@ -37,8 +37,14 @@ int main(int argc, char* argv[])
 //  cloud_cam.setSamples(samples);
 
   // Read the sample index from the terminal.
+  int sample_idx = boost::lexical_cast<int>(argv[2]);
+  if (sample_idx >= cloud_cam.getCloudOriginal()->size())
+  {
+    std::cout << "Error: Sample index is larger than the number of points in the cloud!\n";
+    return -1;
+  }
   std::vector<int> sample_indices;
-  sample_indices.push_back(boost::lexical_cast<int>(argv[2]));
+  sample_indices.push_back(sample_idx);
   cloud_cam.setSampleIndices(sample_indices);
 
   // Create objects to store parameters.
@@ -100,15 +106,21 @@ int main(int argc, char* argv[])
 
   // Create the image for this grasp candidate.
   bool plot_images = true;
-  if (argc >= 4)
-  {
-	  plot_images = boost::lexical_cast<bool>(argv[3]);
-  }
+  plot_images = boost::lexical_cast<bool>(argv[3]);
   Learning learn(image_params, 1, hand_search_params.num_orientations_, plot_images, false);
   std::vector<cv::Mat> images = learn.createImages(cloud_cam, hand_set_list);
 
+  // Evaluate if the grasp candidates are antipodal.
+  std::cout << "Antipodal: ";
+  for (int i=0; i < hand_set_list[0].getHypotheses().size(); i++)
+  {
+    std::cout << hand_set_list[0].getHypotheses()[i].isFullAntipodal() << " ";
+  }
+  std::cout << "\n";
+
   // Classify the grasp images.
-  Lenet net(1, "/home/andreas/projects/grasp_pose_detection/catkin_ws/src/gpd/caffe/15channels/bin/");
+  std::string lenet_params_dir = argv[4];
+  Lenet net(1, lenet_params_dir);
   std::vector<float> scores2 = net.classifyImages(images);
 
   std::cout << "Scores: ";

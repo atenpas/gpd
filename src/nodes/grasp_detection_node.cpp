@@ -87,7 +87,9 @@ void GraspDetectionNode::run()
       // visualize grasps in rviz
       if (use_rviz_)
       {
-        grasps_rviz_pub_.publish(convertToVisualGraspMsg(grasps, 0.1, 0.06, 0.01, 0.02, frame_));
+        const HandSearch::Parameters& params = grasp_detector_->getHandSearchParameters();
+        grasps_rviz_pub_.publish(convertToVisualGraspMsg(grasps, params.hand_outer_diameter_, params.hand_depth_,
+                                                         params.finger_width_, params.hand_height_, frame_));
       }
 
       // reset the system
