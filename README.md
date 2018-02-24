@@ -17,8 +17,6 @@ as viable grasps or not, and clustering viable grasps which are geometrically si
 
 The reference for this package is: [High precision grasp pose detection in dense clutter](http://arxiv.org/abs/1603.01564).
 
-**Notice:** This branch does __not__ depend on Caffe. The forward pass in the neural network is implemented using Eigen. However, this version can currently not be used with custom neural network parameters and cannot be retrained directly. 
-
 ### UR5 Video
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=kfe5bNt35ZI
@@ -30,24 +28,40 @@ alt="UR5 demo" width="640" height="480" border="0" /></a>
 
 1. [PCL 1.7 or later](http://pointclouds.org/)
 2. [Eigen 3.0 or later](https://eigen.tuxfamily.org)
-3. <a href="http://wiki.ros.org/indigo" style="color:blue">ROS Indigo</a> <span style="color:blue">and Ubuntu 
+3. [Caffe](http://caffe.berkeleyvision.org/)
+4. <a href="http://wiki.ros.org/indigo" style="color:blue">ROS Indigo</a> <span style="color:blue">and Ubuntu 
 14.04</span> *or* <a href="http://wiki.ros.org/kinetic" style="color:orange">ROS Kinetic</a> 
 <span style="color:orange">and Ubuntu 16.04</span>
 
 
 ## 3) Prerequisites
 
-1. Install ROS. In Ubuntu 14.04, install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu). 
+The following instructions work for **Ubuntu 14.04** or **Ubuntu 16.04**. Similar instructions should work for other 
+Linux distributions that support ROS.
+
+ 1. Install Caffe [(Instructions)](http://caffe.berkeleyvision.org/installation.html). Follow the 
+[CMake Build instructions](http://caffe.berkeleyvision.org/installation.html#cmake-build). **Notice for Ubuntu 14.04:** 
+Due to a conflict between the Boost version required by Caffe (1.55) and the one installed as a dependency with the 
+Debian package for ROS Indigo (1.54), you need to checkout an older version of Caffe that worked with Boost 1.54. So, 
+when you clone Caffe, please use this command.
+   
+    ```
+    git clone https://github.com/BVLC/caffe.git && cd caffe
+    git checkout 923e7e8b6337f610115ae28859408bc392d13136
+    ```
+
+2. Install ROS. In Ubuntu 14.04, install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu). 
 In Ubuntu 16.04, install ROS Kinetic [(Instructions)](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
-2. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
+
+3. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
 
    ```
    cd <location_of_your_workspace>
    git clone https://github.com/atenpas/gpg.git
    ```
 
-3. Build and install the *grasp_pose_generator*: 
+4. Build and install the *grasp_pose_generator*: 
 
    ```
    cd gpg
@@ -131,11 +145,12 @@ to achieve better runtime for a loss in grasp quality. For more details, please 
 
 If you like this package and use it in your own work, please cite our paper(s):
 
-[1] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, and Robert Platt. [**High precision grasp pose detection in dense 
-clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
+[1] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp Pose Detection in Point 
+Clouds**](http://arxiv.org/abs/1706.09911). The International Journal of Robotics Research, Vol 36, Issue 13-14, 
+pp. 1455 - 1473. October 2017.
 
-[2] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp Pose Detection in Point 
-Clouds**](http://arxiv.org/abs/1706.09911). The International Journal of Robotics Research (IJRR). Vol 36, Issue 13-14, pp. 1455 - 1473. October 2017.
+[2] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, and Robert Platt. [**High precision grasp pose detection in dense 
+clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
 
 
 ## 11) Troubleshooting
@@ -143,3 +158,11 @@ Clouds**](http://arxiv.org/abs/1706.09911). The International Journal of Robotic
 * GCC 4.8: The package [might not compile](https://github.com/atenpas/gpd/issues/14#issuecomment-324789077) with 
 GCC 4.8. This is due to [a bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58251) in GCC. **Solution:** Upgrade to 
 GCC 4.9. 
+
+* During `catkin_make`, you get this error: *[...]/caffe/include/caffe/util/cudnn.hpp:8:34: fatal error: caffe/proto/caffe.pb.h: No such file or directory*. **Solution ([source](https://github.com/muupan/dqn-in-the-caffe/issues/3)):**
+    ```
+    # In the directory you installed Caffe to
+    protoc src/caffe/proto/caffe.proto --cpp_out=.
+    mkdir include/caffe/proto
+    mv src/caffe/proto/caffe.pb.h include/caffe/proto
+    ```
