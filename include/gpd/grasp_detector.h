@@ -119,6 +119,12 @@ public:
     const std::vector<double>& workspace);
   
   /**
+   * \brief Filter side grasps that are close to the table.
+   * \param hand_set_list list of grasp candidate sets
+   */
+  std::vector<GraspSet> filterSideGraspsCloseToTable(const std::vector<GraspSet>& hand_set_list);
+
+  /**
    * \brief Filter grasps that are half-antipodal.
    * \param hand_set_list the list of grasp candidate sets
    * \return the grasps that are not half-antipodal
@@ -197,12 +203,17 @@ private:
 
   // filtering parameters
   bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace and the robot hand width
+  bool filter_table_side_grasps_; ///< if side grasps close to the table are filtered
   bool filter_half_antipodal_; ///< if grasps are filtered based on being half-antipodal
   bool cluster_grasps_; ///< if grasps are clustered
   double outer_diameter_; ///< the outer diameter of the robot hand
   double min_aperture_; ///< the minimum opening width of the robot hand
   double max_aperture_; ///< the maximum opening width of the robot hand
   std::vector<double> workspace_; ///< the workspace of the robot
+  std::vector<double> vert_axis_; ///< vertical axis used for filtering side grasps that are close to the table
+  double table_height_; ///< height of table (along vertical axis)
+  double table_thresh_; ///< distance threshold below which side grasps are considered to be too close to the table
+  double angle_thresh_; ///< angle threshold below which grasps are considered to be side grasps
 
   // selection parameters
   int num_selected_; ///< the number of selected grasps

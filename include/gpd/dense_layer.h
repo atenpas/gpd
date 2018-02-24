@@ -41,12 +41,27 @@
 #include <gpd/layer.h>
 
 
+/** DenseLayer class
+ *
+ * \brief Dense (fully connected) layer.
+ *
+ * This class is a dense (fully connected) layer for a neural network.
+ *
+ */
 class DenseLayer : public Layer
 {
   public:
 
+    /**
+     * \brief Contructor.
+     * \param num_units number of units/neurons in this layer
+     */
     DenseLayer(int num_units) : num_units_(num_units) {}
 
+    /**
+     * \brief Forward pass.
+     * \return output of forward pass
+     */
     Eigen::MatrixXf forward(const std::vector<float>& x) const;
 
 

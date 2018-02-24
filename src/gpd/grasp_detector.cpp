@@ -79,6 +79,12 @@ GraspDetector::GraspDetector(ros::NodeHandle& node)
   min_aperture_ = gripper_width_range[0];
   max_aperture_ = gripper_width_range[1];
 
+  node.param("filter_table_side_grasps", filter_table_side_grasps_, false);
+  node.getParam("vertical_axis", vert_axis_);
+  node.param("angle_thresh", angle_thresh_, 0.1);
+  node.param("table_height", table_height_, 0.5);
+  node.param("table_thresh", table_thresh_, 0.05);
+
   // Read clustering parameters
   int min_inliers;
   node.param("min_inliers", min_inliers, 0);
@@ -143,7 +149,13 @@ std::vector<Grasp> GraspDetector::detectGrasps(const CloudCamera& cloud_cam)
     }
   }
 
-  // 2.2 Filter half grasps.
+  // 2.2 Filter side grasps that are very close to the table.
+  if (filter_table_side_grasps_)
+  {
+    candidates = filterSideGraspsCloseToTable(candidates);
+  }
+
+  // 2.3 Filter half grasps.
   if (filter_half_antipodal_)
   {
     candidates = filterHalfAntipodal(candidates);
@@ -399,6 +411,53 @@ std::vector<GraspSet> GraspDetector::filterGraspsWorkspace(const std::vector<Gra
   }
 
   ROS_INFO_STREAM("# grasps within workspace and gripper width: " << remaining);
+
+  return hand_set_list_out;
+}
+
+
+std::vector<GraspSet> GraspDetector::filterSideGraspsCloseToTable(const std::vector<GraspSet>& hand_set_list)
+{
+  const double APPROACH_LENGTH = 0.05;
+
+  int remaining = 0;
+  std::vector<GraspSet> hand_set_list_out;
+  Eigen::Vector3d vert_axis_vec;
+  vert_axis_vec << vert_axis_[0], vert_axis_[1], vert_axis_[2];
+
+  for (int i = 0; i < hand_set_list.size(); i++)
+  {
+    const std::vector<Grasp>& hands = hand_set_list[i].getHypotheses();
+    Eigen::Array<bool, 1, Eigen::Dynamic> is_valid = hand_set_list[i].getIsValid();
+
+    for (int j = 0; j < hands.size(); j++)
+    {
+      if (is_valid(j))
+      {
+        double angle = fabs(vert_axis_vec.transpose() * hands[i].getApproach());
+        double dist = fabs((hands[i].getGraspBottom() - APPROACH_LENGTH*hands[i].getApproach())(2)) - table_height_;
+
+        // This is a side grasps that is too close to the table.
+        if (angle > angle_thresh_ && dist < table_thresh_)
+        {
+          is_valid(j) = false;
+        }
+        else
+        {
+          is_valid(j) = true;
+          remaining++;
+        }
+      }
+    }
+
+    if (is_valid.any())
+    {
+      hand_set_list_out.push_back(hand_set_list[i]);
+      hand_set_list_out[hand_set_list_out.size() - 1].setIsValid(is_valid);
+    }
+  }
+
+  ROS_INFO_STREAM("# grasps that are not too close to the table: " << remaining);
 
   return hand_set_list_out;
 }

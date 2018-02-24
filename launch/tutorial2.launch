@@ -51,6 +51,13 @@
     <rosparam param="workspace_grasps"> [0.55, 1.0, -0.41, 0.03, -0.29, 1.0] </rosparam>
     <param name="filter_half_antipodal" value="false"/> <!-- on half antipodal -->
     
+    <!-- Filtering of grasps which are too low on (i.e. too close to) table -->
+    <param name="filter_table_side_grasps" value="false" />
+    <rosparam param="vertical_axis"> [0, 0, 1] </rosparam>
+    <param name="angle_thresh" value="0.1" />
+    <param name="table_height" value="0.0" />
+    <param name="table_thresh" value="0.05" />
+    
     <!-- Grasp image creation -->
     <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
     <param name="remove_plane_before_image_calculation" value="false" /> <!-- removes table plane from point cloud to speed up shadow computations -->

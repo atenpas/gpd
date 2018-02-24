@@ -41,12 +41,33 @@
 #include <gpd/layer.h>
 
 
+/** ConvLayer class
+ *
+ * \brief Convolutional layer.
+ *
+ * This class is a convolutional layer for a neural network.
+ *
+ */
 class ConvLayer : public Layer
 {
   public:
 
+    /**
+     * \brief Constructor.
+     * \param width input width
+     * \param height input height
+     * \param depth input depth
+     * \param num_filters number of convolutional filters
+     * \param spatial_extent size of each filter
+     * \param padding how much zero-padding is used
+     */
     ConvLayer(int width, int height, int depth, int num_filters, int spatial_extent, int stride, int padding);
 
+    /**
+     * \brief Forward pass.
+     * \param x input
+     * \return output of forward pass
+     */
     Eigen::MatrixXf forward(const std::vector<float>& x) const;
 
 
@@ -54,10 +75,31 @@ class ConvLayer : public Layer
 
     typedef Eigen::Map<const Eigen::Matrix<float,Eigen::Dynamic,Eigen::Dynamic,Eigen::RowMajor> > RowMajorMatrixMap;
 
+    /**
+     * \brief Calculate the forward pass.
+     * \param W weight matrix
+     * \param b bias vector
+     * \param X input matrix
+     * \return output of forward pass
+     */
     Eigen::MatrixXf forward(const Eigen::MatrixXf& W, const Eigen::VectorXf& b, const Eigen::MatrixXf& X) const;
 
     bool is_a_ge_zero_and_a_lt_b(int a, int b) const;
 
+    /**
+     * \brief Convert image to array. Arranges image slices into columns so that the forward pass can be expressed as a
+     * as a matrix multiplication.
+     * \param data_im the image to be converted
+     * \param channels number of image channels
+     * \param height image height
+     * \param width image width
+     * \param num_kernels number of filters to be used in the convolution
+     * \param kernel_h filter height
+     * \param kernel_w filter width
+     * \param stride_h stride height
+     * \param stride_w stride width
+     * \param[out] data_col the array
+     */
     void imageToColumns(const float* data_im, const int channels, const int height, const int width,
       const int num_kernels, const int kernel_h, const int kernel_w, const int stride_h, const int stride_w,
       float* data_col) const;

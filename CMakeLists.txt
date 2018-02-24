@@ -62,11 +62,7 @@ add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg Grasp
   SamplesMsg.msg)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(FILES detect_grasps.srv)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -124,6 +120,7 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_clustering src/${PROJECT_NAME}/clustering.cpp)
 add_library(${PROJECT_NAME}_grasp_detector src/${PROJECT_NAME}/grasp_detector.cpp)
+add_library(${PROJECT_NAME}_grasp_plotter src/${PROJECT_NAME}/grasp_plotter.cpp)
 add_library(${PROJECT_NAME}_learning src/${PROJECT_NAME}/learning.cpp)
 add_library(${PROJECT_NAME}_sequential_importance_sampling src/${PROJECT_NAME}/sequential_importance_sampling.cpp)
 add_library(${PROJECT_NAME}_grasp_image src/${PROJECT_NAME}/grasp_image.cpp)
@@ -139,6 +136,7 @@ add_library(${PROJECT_NAME}_lenet src/${PROJECT_NAME}/lenet.cpp)
 
 ## Declare C++ executables
 add_executable(${PROJECT_NAME}_detect_grasps src/nodes/grasp_detection_node.cpp)
+add_executable(${PROJECT_NAME}_detect_grasps_server src/nodes/grasp_detection_server.cpp)
 add_executable(${PROJECT_NAME}_generate_candidates src/nodes/generate_candidates.cpp)
 add_executable(${PROJECT_NAME}_create_grasp_images src/nodes/create_grasp_images.cpp)
 add_executable(${PROJECT_NAME}_classify_candidates src/nodes/classify_candidates.cpp)
@@ -146,6 +144,7 @@ add_executable(${PROJECT_NAME}_test_occlusion src/tests/test_occlusion.cpp)
 add_executable(${PROJECT_NAME}_test_grasp_image src/tests/test_grasp_image.cpp)
 add_executable(${PROJECT_NAME}_test_conv_layer src/tests/test_conv_layer.cpp)
 add_executable(${PROJECT_NAME}_test_lenet src/tests/test_lenet.cpp)
+add_executable(${PROJECT_NAME}_test_service src/tests/test_service.cpp)
 
 
 ## Add cmake target dependencies of the executable
@@ -181,6 +180,10 @@ target_link_libraries(${PROJECT_NAME}_grasp_detector
                       ${GENERATOR_LIB}
                       ${catkin_LIBRARIES})
 
+target_link_libraries(${PROJECT_NAME}_grasp_plotter                      
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_grasp_image
                       ${OpenCV_LIBRARIES})
 
@@ -193,7 +196,14 @@ target_link_libraries(${PROJECT_NAME}_learning
 
 target_link_libraries(${PROJECT_NAME}_detect_grasps
                       ${PROJECT_NAME}_grasp_detector
+                      ${PROJECT_NAME}_grasp_plotter
                       ${PROJECT_NAME}_sequential_importance_sampling
+                      ${GENERATOR_LIB}
+                      ${PCL_LIBRARIES})
+
+target_link_libraries(${PROJECT_NAME}_detect_grasps_server
+                      ${PROJECT_NAME}_grasp_detector
+                      ${PROJECT_NAME}_grasp_plotter
                       ${GENERATOR_LIB}
                       ${PCL_LIBRARIES})
 
@@ -223,6 +233,10 @@ target_link_libraries(${PROJECT_NAME}_lenet
 target_link_libraries(${PROJECT_NAME}_test_lenet
                       ${PROJECT_NAME}_lenet)
 
+target_link_libraries(${PROJECT_NAME}_test_service
+                      ${catkin_LIBRARIES}
+                      ${PCL_LIBRARIES})
+
 target_link_libraries(${PROJECT_NAME}_learning
                       ${GENERATOR_LIB}
                       ${catkin_LIBRARIES})
@@ -231,6 +245,10 @@ target_link_libraries(${PROJECT_NAME}_learning
 # Rename targets to simplify their names.
 set_target_properties(${PROJECT_NAME}_detect_grasps
                       PROPERTIES OUTPUT_NAME detect_grasps
+                      PREFIX "")
+
+set_target_properties(${PROJECT_NAME}_detect_grasps_server
+                      PROPERTIES OUTPUT_NAME detect_grasps_server
                       PREFIX "")
 
 set_target_properties(${PROJECT_NAME}_classify_candidates
@@ -255,4 +273,8 @@ set_target_properties(${PROJECT_NAME}_test_conv_layer
 
 set_target_properties(${PROJECT_NAME}_test_lenet
                       PROPERTIES OUTPUT_NAME test_lenet
+                      PREFIX "")
+
+set_target_properties(${PROJECT_NAME}_test_service
+                      PROPERTIES OUTPUT_NAME test_service
                       PREFIX "")

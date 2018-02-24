@@ -68,6 +68,8 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   // uses ROS topics to publish grasp candidates, antipodal grasps, and grasps after clustering
   grasps_pub_ = node.advertise<gpd::GraspConfigList>("clustered_grasps", 10);
 
+  rviz_plotter_ = new GraspPlotter(node, grasp_detector_->getHandSearchParameters());
+
   node.getParam("workspace", workspace_);
 }
 
@@ -81,18 +83,16 @@ void GraspDetectionNode::run()
   {
     if (has_cloud_)
     {
-      // detect grasps in point cloud
+      // Detect grasps in point cloud.
       std::vector<Grasp> grasps = detectGraspPosesInTopic();
 
-      // visualize grasps in rviz
+      // Visualize the detected grasps in rviz.
       if (use_rviz_)
       {
-        const HandSearch::Parameters& params = grasp_detector_->getHandSearchParameters();
-        grasps_rviz_pub_.publish(convertToVisualGraspMsg(grasps, params.hand_outer_diameter_, params.hand_depth_,
-                                                         params.finger_width_, params.hand_height_, frame_));
+        rviz_plotter_->drawGrasps(grasps, frame_);
       }
 
-      // reset the system
+      // Reset the system.
       has_cloud_ = false;
       has_samples_ = false;
       has_normals_ = false;
@@ -321,117 +321,6 @@ gpd::GraspConfig GraspDetectionNode::convertToGraspMsg(const Grasp& hand)
   tf::pointEigenToMsg(hand.getSample(), msg.sample);
 
   return msg;
-}
-
-
-visualization_msgs::MarkerArray GraspDetectionNode::convertToVisualGraspMsg(const std::vector<Grasp>& hands,
-  double outer_diameter, double hand_depth, double finger_width, double hand_height, const std::string& frame_id)
-{
-  double width = outer_diameter;
-  double hw = 0.5 * width;
-
-  visualization_msgs::MarkerArray marker_array;
-  visualization_msgs::Marker left_finger, right_finger, base, approach;
-  Eigen::Vector3d left_bottom, right_bottom, left_top, right_top, left_center, right_center, approach_center;
-
-  for (int i = 0; i < hands.size(); i++)
-  {
-    left_bottom = hands[i].getGraspBottom() + hw * hands[i].getBinormal();
-    right_bottom = hands[i].getGraspBottom() - hw * hands[i].getBinormal();
-    left_top = left_bottom + hand_depth * hands[i].getApproach();
-    right_top = right_bottom + hand_depth * hands[i].getApproach();
-
-    left_center = left_bottom + 0.5 * (left_top - left_bottom) - 0.5 * finger_width * hands[i].getFrame().col(1);
-    right_center = right_bottom + 0.5 * (right_top - right_bottom) + 0.5 * finger_width * hands[i].getFrame().col(1);
-    approach_center = left_bottom + 0.5 * (right_bottom - left_bottom) - 0.04 * hands[i].getFrame().col(0);
-
-    base = createHandBaseMarker(left_bottom, right_bottom, hands[i].getFrame(), 0.02, hand_height, i, frame_id);
-    left_finger = createFingerMarker(left_center, hands[i].getFrame(), hand_depth, finger_width, hand_height, i*3, frame_id);
-    right_finger = createFingerMarker(right_center, hands[i].getFrame(), hand_depth, finger_width, hand_height, i*3+1, frame_id);
-    approach = createFingerMarker(approach_center, hands[i].getFrame(), 0.08, finger_width, hand_height, i*3+2, frame_id);
-
-    marker_array.markers.push_back(left_finger);
-    marker_array.markers.push_back(right_finger);
-    marker_array.markers.push_back(approach);
-    marker_array.markers.push_back(base);
-  }
-
-  return marker_array;
-}
-
-
-visualization_msgs::Marker GraspDetectionNode::createFingerMarker(const Eigen::Vector3d& center,
-  const Eigen::Matrix3d& frame, double length, double width, double height, int id, const std::string& frame_id)
-{
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.header.stamp = ros::Time();
-  marker.ns = "finger";
-  marker.id = id;
-  marker.type = visualization_msgs::Marker::CUBE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = center(0);
-  marker.pose.position.y = center(1);
-  marker.pose.position.z = center(2);
-  marker.lifetime = ros::Duration(10);
-
-  // use orientation of hand frame
-  Eigen::Quaterniond quat(frame);
-  marker.pose.orientation.x = quat.x();
-  marker.pose.orientation.y = quat.y();
-  marker.pose.orientation.z = quat.z();
-  marker.pose.orientation.w = quat.w();
-
-  // these scales are relative to the hand frame (unit: meters)
-  marker.scale.x = length; // forward direction
-  marker.scale.y = width; // hand closing direction
-  marker.scale.z = height; // hand vertical direction
-
-  marker.color.a = 0.5;
-  marker.color.r = 0.0;
-  marker.color.g = 0.0;
-  marker.color.b = 0.5;
-
-  return marker;
-}
-
-
-visualization_msgs::Marker GraspDetectionNode::createHandBaseMarker(const Eigen::Vector3d& start,
-  const Eigen::Vector3d& end, const Eigen::Matrix3d& frame, double length, double height, int id,
-  const std::string& frame_id)
-{
-  Eigen::Vector3d center = start + 0.5 * (end - start);
-
-  visualization_msgs::Marker marker;
-  marker.header.frame_id = frame_id;
-  marker.header.stamp = ros::Time();
-  marker.ns = "hand_base";
-  marker.id = id;
-  marker.type = visualization_msgs::Marker::CUBE;
-  marker.action = visualization_msgs::Marker::ADD;
-  marker.pose.position.x = center(0);
-  marker.pose.position.y = center(1);
-  marker.pose.position.z = center(2);
-  marker.lifetime = ros::Duration(10);
-
-  // use orientation of hand frame
-  Eigen::Quaterniond quat(frame);
-  marker.pose.orientation.x = quat.x();
-  marker.pose.orientation.y = quat.y();
-  marker.pose.orientation.z = quat.z();
-  marker.pose.orientation.w = quat.w();
-
-  // these scales are relative to the hand frame (unit: meters)
-  marker.scale.x = length; // forward direction
-  marker.scale.y = (end - start).norm(); // hand closing direction
-  marker.scale.z = height; // hand vertical direction
-
-  marker.color.a = 0.5;
-  marker.color.r = 0.0;
-  marker.color.g = 0.0;
-  marker.color.b = 1.0;
-
-  return marker;
 }
 
 

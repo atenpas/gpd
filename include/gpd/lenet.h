@@ -46,12 +46,27 @@
 #include <gpd/dense_layer.h>
 
 
+/** Lenet class
+ *
+ * \brief Deep neural net to predict valid grasps.
+ *
+ * This class predicts for each grasp image, if the grasp is valid or not. It is a deep neural network, similar to
+ * LeNet. Only forward pass is supported and for now, the size of all layers is fixed.
+ *
+ */
 class Lenet
 {
   public:
 
+    /**
+     * \brief Constructor.
+     * \param num_threads number of CPU threads to use for forward pass
+     */
     Lenet(int num_threads, const std::string& params_dir);
 
+    /**
+     * \brief Destructor.
+     */
     ~Lenet()
     {
       delete conv1;
@@ -60,29 +75,58 @@ class Lenet
       delete dense2;
     }
 
+    /**
+     * \brief Classify grasp images.
+     * \param image_list list of grasp images
+     * \return list of scores
+     */
     std::vector<float> classifyImages(const std::vector<cv::Mat>& image_list);
 
+    /**
+     * \brief Forward pass of the network.
+     * \param x input to the network
+     * \return output of the network
+     */
     std::vector<float> forward(const std::vector<float>& x);
 
+    /**
+     * \brief Read a text file line by line into a vector (each line is a number).
+     * \param location path to the text file
+     */
     std::vector<float> readFileLineByLineIntoVector(const std::string& location);
 
+    /**
+     * \brief Read a binary file into a vector.
+     * \param location path to the binary file
+     */
     std::vector<float> readBinaryFileIntoVector(const std::string& location);
 
 
   private:
 
+    /**
+     * \brief Forward pass for a max pooling layer.
+     * \param X input
+     * \param filter_size the size of the filter
+     * \param stride the stride at which to apply the filter
+     */
     Eigen::MatrixXf poolForward(const Eigen::MatrixXf& X, int filter_size, int stride) const;
 
+    /**
+     * \brief Convert an image to an array (std::vector) so that it can be used as input for a layer.
+     * \param img the image to be converted
+     * \return the array
+     */
     std::vector<float> imageToArray(const cv::Mat& img) const;
 
-    ConvLayer* conv1;
-    ConvLayer* conv2;
-    DenseLayer* dense1;
-    DenseLayer* dense2;
+    ConvLayer* conv1; ///< 1st conv layer
+    ConvLayer* conv2; ///< 2nd conv layer
+    DenseLayer* dense1; ///< 1st dense layer
+    DenseLayer* dense2; ///< 2nd dense layer
 
-    std::vector<float> x_dense1, x_dense2, x_conv2;
+    std::vector<float> x_dense1, x_dense2, x_conv2; ///< inputs for layers
 
-    int num_threads_;
+    int num_threads_; ///< number of CPU threads to use in forward pass
 };
 
 

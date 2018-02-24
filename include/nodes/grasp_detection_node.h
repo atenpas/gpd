@@ -62,6 +62,7 @@
 
 // this project (headers)
 #include "../gpd/grasp_detector.h"
+#include "../gpd/grasp_plotter.h"
 #include "../gpd/sequential_importance_sampling.h"
 
 
@@ -92,13 +93,9 @@ public:
   ~GraspDetectionNode()
   {
     delete cloud_camera_;
-
-    if (use_importance_sampling_)
-    {
-      delete importance_sampling_;
-    }
-
+    delete importance_sampling_;
     delete grasp_detector_;
+    delete rviz_plotter_;
   }
 
   /**
@@ -163,15 +160,6 @@ private:
 
   gpd::GraspConfig convertToGraspMsg(const Grasp& hand);
 
-  visualization_msgs::MarkerArray convertToVisualGraspMsg(const std::vector<Grasp>& hands, double outer_diameter,
-    double hand_depth, double finger_width, double hand_height, const std::string& frame_id);
-
-  visualization_msgs::Marker createFingerMarker(const Eigen::Vector3d& center, const Eigen::Matrix3d& frame,
-    double length, double width, double height, int id, const std::string& frame_id);
-
-  visualization_msgs::Marker createHandBaseMarker(const Eigen::Vector3d& start, const Eigen::Vector3d& end,
-      const Eigen::Matrix3d& frame, double length, double height, int id, const std::string& frame_id);
-
   Eigen::Matrix3Xd fillMatrixFromFile(const std::string& filename, int num_normals);
 
   Eigen::Vector3d view_point_; ///< (input) view point of the camera onto the point cloud
@@ -188,18 +176,12 @@ private:
   ros::Publisher grasps_rviz_pub_; ///< ROS publisher for grasps in rviz (visualization)
 
   bool use_importance_sampling_; ///< if importance sampling is used
-  bool filter_grasps_; ///< if grasps are filtered on workspace and gripper aperture
-  bool filter_half_antipodal_; ///< if half-antipodal grasps are filtered
-  bool plot_filtered_grasps_; ///< if filtered grasps are plotted
-  bool plot_selected_grasps_; ///< if selected grasps are plotted
-  bool plot_normals_; ///< if normals are plotted
-  bool plot_samples_; ///< if samples/indices are plotted
   bool use_rviz_; ///< if rviz is used for visualization instead of PCL
-  int num_selected_; ///< number of selected highest-scoring grasp clusters
   std::vector<double> workspace_; ///< workspace limits
 
-  GraspDetector* grasp_detector_; ///< used to run the grasp pose detection
-  SequentialImportanceSampling* importance_sampling_; ///< sequential importance sampling variation of grasp pose detection
+  GraspDetector* grasp_detector_; ///< used to run the GPD algorithm
+  SequentialImportanceSampling* importance_sampling_; ///< sequential importance sampling variation of GPD algorithm
+  GraspPlotter* rviz_plotter_; ///< used to plot detected grasps in rviz
 
   /** constants for input point cloud types */
   static const int POINT_CLOUD_2; ///< sensor_msgs/PointCloud2

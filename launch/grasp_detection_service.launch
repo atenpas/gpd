@@ -1,76 +1,68 @@
+<?xml version="1.0"?>
+
 <launch>
-  
-  <!-- Load hand geometry parameters -->  
-  <include file="$(find gpd)/launch/hand_geometry.launch">
-    <arg name="node" value="detect_grasps" />
+
+  <!-- Load hand geometry parameters -->
+  <include file="$(find gpd)/launch/ur5_hand_geometry.launch">
+    <arg name="node" value="detect_grasps_server" />
   </include>
-  
+
   <!-- Load classifier parameters -->
   <include file="$(find gpd)/launch/lenet/ur5_classifier_15channels.launch">
-    <arg name="node" value="detect_grasps" />
+    <arg name="node" value="detect_grasps_server" />
   </include>
-  
-	<node name="detect_grasps" pkg="gpd" type="detect_grasps" output="screen">
-    
-    <!-- If sequential importance sampling is used (default: false) -->
-    <param name="use_importance_sampling" value="false" />
-        
-    <!-- What type of point cloud is used and what ROS topic it comes from -->
-    <param name="cloud_type" value="0" /> <!-- 0: PointCloud2, 1: CloudSized, 2: CloudIndexed, 3: CloudSamples -->
-    <param name="cloud_topic" value="/camera/depth_registered/points" />
-    
-    <!-- (optional) The ROS topic that the samples come from (default: an empty string) -->
-    <param name="samples_topic" value="" />
+
+  <node name="detect_grasps_server" pkg="gpd" type="detect_grasps_server" output="screen">
     
     <!-- Plotting parameters -->
     <param name="plot_normals" value="false" />
-    <param name="plot_samples" value="false" />    
+    <param name="plot_samples" value="false" />  <!-- This is the one to show all grasp candidates in RViz, if you plot -->
     <param name="plot_candidates" value="false" />
     <param name="plot_filtered_grasps" value="false" />
     <param name="plot_valid_grasps" value="false" />
     <param name="plot_clusters" value="false" />
     <param name="plot_selected_grasps" value="false" />
     <param name="rviz_topic" value="grasps_rviz" />
-    
+
     <!-- Preprocessing of point cloud -->
     <param name="voxelize" value="true"/>
     <param name="remove_outliers" value="false"/>
     <rosparam param="workspace"> [-1, 1, -1, 1, -1, 1] </rosparam>
     <rosparam param="camera_position"> [0, 0, 0] </rosparam>
-            
+
     <!-- General parameters -->
-    <param name="num_samples" value="100" />
+    <param name="num_samples" value="1000" />  <!-- If have no valid grasps with score > 0, increase this. Try 500 or even 1000. This will be slow on a laptop. If run on cluster, will be much faster if you increase num_threads below as well. Or use the Caffe version of gpd. -->
     <param name="num_threads" value="4" />
-    
+
     <!-- Parameters for local grasp candidate search -->
     <param name="nn_radius" value="0.01" />
     <param name="num_orientations" value="8" /> <!-- Number of orientations to consider -->
-    
-    <!-- Filtering of grasp candidates --> 
+
+    <!-- Filtering of grasp candidates -->
     <param name="filter_grasps" value="false" /> <!-- on workspace and robot hand aperture -->
-    <rosparam param="workspace_grasps"> [0.55, 1.0, -0.41, 0.03, -0.29, 1.0] </rosparam>
+    <rosparam param="workspace_grasps"> [-1, 1, -1, 1, -1, 1] </rosparam>
     <param name="filter_half_antipodal" value="false"/> <!-- on half antipodal -->
     
-    <!-- Filtering of grasps which are too low on (i.e. too close to) table -->
+    <!-- Filter out grasps which are too low on (i.e. too close to) the table -->
     <param name="filter_table_side_grasps" value="false" />
     <rosparam param="vertical_axis"> [0, 0, 1] </rosparam>
     <param name="angle_thresh" value="0.1" />
     <param name="table_height" value="0.0" />
     <param name="table_thresh" value="0.05" />
-    
+
     <!-- Grasp image creation -->
     <param name="create_image_batches" value="false" /> <!-- creates grasp images in batches (less memory usage) -->
     <param name="remove_plane_before_image_calculation" value="false" /> <!-- removes table plane from point cloud to speed up shadow computations -->
-    
+
     <!-- Clustering of grasps -->
-    <param name="min_inliers" value="1" />
-        
+    <param name="min_inliers" value="0" />
+
     <!-- Grasp selection -->
-    <param name="min_score_diff" value="0" />
-    <param name="min_aperture" value="0.029" />
-    <param name="max_aperture" value="0.072" />
+    <param name="min_score_diff" value="50" />  <!-- Default: 50 -->
+    <param name="min_aperture" value="0.0" />
+    <param name="max_aperture" value="0.085" />
     <param name="num_selected" value="5" />
-        
-	</node>
-  
+
+  </node>
+
 </launch>
