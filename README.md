@@ -10,6 +10,8 @@
 
 This package detects 6-DOF grasp poses for a 2-finger grasp (e.g. a parallel jaw gripper) in 3D point clouds.
 
+**Note: This version does not require Caffe.**
+
 <!-- <img src="readme/examples.png" alt="" style="width: 400px;"/> -->
 
 Grasp pose detection consists of three steps: sampling a large number of grasp candidates, classifying these candidates 
@@ -28,8 +30,7 @@ alt="UR5 demo" width="640" height="480" border="0" /></a>
 
 1. [PCL 1.7 or later](http://pointclouds.org/)
 2. [Eigen 3.0 or later](https://eigen.tuxfamily.org)
-3. [Caffe](http://caffe.berkeleyvision.org/)
-4. <a href="http://wiki.ros.org/indigo" style="color:blue">ROS Indigo</a> <span style="color:blue">and Ubuntu 
+3. <a href="http://wiki.ros.org/indigo" style="color:blue">ROS Indigo</a> <span style="color:blue">and Ubuntu 
 14.04</span> *or* <a href="http://wiki.ros.org/kinetic" style="color:orange">ROS Kinetic</a> 
 <span style="color:orange">and Ubuntu 16.04</span>
 
@@ -39,29 +40,17 @@ alt="UR5 demo" width="640" height="480" border="0" /></a>
 The following instructions work for **Ubuntu 14.04** or **Ubuntu 16.04**. Similar instructions should work for other 
 Linux distributions that support ROS.
 
- 1. Install Caffe [(Instructions)](http://caffe.berkeleyvision.org/installation.html). Follow the 
-[CMake Build instructions](http://caffe.berkeleyvision.org/installation.html#cmake-build). **Notice for Ubuntu 14.04:** 
-Due to a conflict between the Boost version required by Caffe (1.55) and the one installed as a dependency with the 
-Debian package for ROS Indigo (1.54), you need to checkout an older version of Caffe that worked with Boost 1.54. So, 
-when you clone Caffe, please use this command.
-   
-    ```
-    git clone https://github.com/BVLC/caffe.git && cd caffe
-    git checkout 923e7e8b6337f610115ae28859408bc392d13136
-    ```
-
-2. Install ROS. In Ubuntu 14.04, install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu). 
+1. Install ROS. In Ubuntu 14.04, install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu). 
 In Ubuntu 16.04, install ROS Kinetic [(Instructions)](http://wiki.ros.org/kinetic/Installation/Ubuntu).
 
-
-3. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
+2. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
 
    ```
    cd <location_of_your_workspace>
    git clone https://github.com/atenpas/gpg.git
    ```
 
-4. Build and install the *grasp_pose_generator*: 
+3. Build and install the *grasp_pose_generator*: 
 
    ```
    cd gpg
@@ -157,12 +146,4 @@ clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
 
 * GCC 4.8: The package [might not compile](https://github.com/atenpas/gpd/issues/14#issuecomment-324789077) with 
 GCC 4.8. This is due to [a bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58251) in GCC. **Solution:** Upgrade to 
-GCC 4.9. 
-
-* During `catkin_make`, you get this error: *[...]/caffe/include/caffe/util/cudnn.hpp:8:34: fatal error: caffe/proto/caffe.pb.h: No such file or directory*. **Solution ([source](https://github.com/muupan/dqn-in-the-caffe/issues/3)):**
-    ```
-    # In the directory you installed Caffe to
-    protoc src/caffe/proto/caffe.proto --cpp_out=.
-    mkdir include/caffe/proto
-    mv src/caffe/proto/caffe.pb.h include/caffe/proto
-    ```
+GCC 4.9.
