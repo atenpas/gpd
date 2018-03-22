@@ -12,7 +12,7 @@ This package detects 6-DOF grasp poses for a 2-finger grasp (e.g. a parallel jaw
 
 **Note: This version does not require Caffe.**
 
-<!-- <img src="readme/examples.png" alt="" style="width: 400px;"/> -->
+<img src="readme/clutter.png"/>
 
 Grasp pose detection consists of three steps: sampling a large number of grasp candidates, classifying these candidates 
 as viable grasps or not, and clustering viable grasps which are geometrically similar.
