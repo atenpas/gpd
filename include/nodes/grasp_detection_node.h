@@ -64,6 +64,7 @@
 #include "../gpd/grasp_detector.h"
 #include "../gpd/sequential_importance_sampling.h"
 
+#include <gpd/SetParameters.h>
 
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGBA;
 typedef pcl::PointCloud<pcl::PointNormal> PointCloudPointNormal;
@@ -79,7 +80,7 @@ typedef pcl::PointCloud<pcl::PointNormal> PointCloudPointNormal;
 class GraspDetectionNode
 {
 public:
-  
+
   /**
    * \brief Constructor.
    * \param node the ROS node
@@ -135,12 +136,18 @@ private:
    * \param msg the incoming ROS message
   */
   void cloud_indexed_callback(const gpd::CloudIndexed& msg);
-  
+
   /**
    * \brief Callback function for the ROS topic that contains the input point cloud and a list of (x,y,z) samples.
    * \param msg the incoming ROS message
   */
   void cloud_samples_callback(const gpd::CloudSamples& msg);
+
+  /**
+   * \brief Callback function for the ROS service that reloads the rosparams.
+   * \param req, resp the service request and response
+  */
+  bool set_params_callback(gpd::SetParameters::Request &req, gpd::SetParameters::Response &resp);
 
   /**
    * \brief Initialize the <cloud_camera> object given a <cloud_sources> message.
@@ -182,10 +189,13 @@ private:
   int size_left_cloud_; ///< (input) size of the left point cloud (when using two point clouds as input)
   bool has_cloud_, has_normals_, has_samples_; ///< status variables for received (input) messages
   std::string frame_; ///< point cloud frame
+
+  ros::NodeHandle nh_; ///< ROS node handle
   ros::Subscriber cloud_sub_; ///< ROS subscriber for point cloud messages
   ros::Subscriber samples_sub_; ///< ROS subscriber for samples messages
   ros::Publisher grasps_pub_; ///< ROS publisher for grasp list messages
   ros::Publisher grasps_rviz_pub_; ///< ROS publisher for grasps in rviz (visualization)
+  ros::ServiceServer srv_set_params_; ///< ROS service server for setting params
 
   bool use_importance_sampling_; ///< if importance sampling is used
   bool filter_grasps_; ///< if grasps are filtered on workspace and gripper aperture

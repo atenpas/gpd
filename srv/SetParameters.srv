@@ -1,0 +1,11 @@
+bool set_workspace
+float32[6] workspace
+
+bool set_workspace_grasps
+float32[6] workspace_grasps
+
+bool set_camera_position
+float32[3] camera_position
+---
+
+bool success

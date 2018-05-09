@@ -4,7 +4,7 @@ project(gpd)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation roscpp 
+find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation roscpp
   sensor_msgs std_msgs)
 
 # PCL
@@ -67,15 +67,14 @@ set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp -flto -Wno-deprecated -Wenum-compare"
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg 
+add_message_files(FILES CloudIndexed.msg CloudSamples.msg CloudSources.msg GraspConfig.msg GraspConfigList.msg
   SamplesMsg.msg)
 
 ## Generate services in the 'srv' folder
-# add_service_files(
-#   FILES
-#   Service1.srv
-#   Service2.srv
-# )
+add_service_files(DIRECTORY srv
+ FILES
+   SetParameters.srv
+)
 
 ## Generate actions in the 'action' folder
 # add_action_files(
@@ -159,98 +158,98 @@ add_executable(${PROJECT_NAME}_test_occlusion src/tests/test_occlusion.cpp)
 # add_dependencies(grasp_candidates_classifier_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_caffe_classifier 
-                      ${Caffe_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_caffe_classifier
+                      ${Caffe_LIBRARIES}
                       ${OpenCV_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_clustering 
+target_link_libraries(${PROJECT_NAME}_clustering
                       ${GENERATOR_LIB})
 
-target_link_libraries(${PROJECT_NAME}_create_grasp_images 
-                      ${PROJECT_NAME}_learning 
-                      ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_create_grasp_images
+                      ${PROJECT_NAME}_learning
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_create_training_data  
+target_link_libraries(${PROJECT_NAME}_create_training_data
                       ${PROJECT_NAME}_data_generator)
 
-target_link_libraries(${PROJECT_NAME}_data_generator   
-                      ${PROJECT_NAME}_learning 
-                      ${GENERATOR_LIB} 
-                      ${Caffe_LIBRARIES} 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_data_generator
+                      ${PROJECT_NAME}_learning
+                      ${GENERATOR_LIB}
+                      ${Caffe_LIBRARIES}
+                      ${catkin_LIBRARIES}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_generate_candidates 
-                      ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_generate_candidates
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_classify_candidates                       
-                      ${PROJECT_NAME}_grasp_detector 
-                      ${PROJECT_NAME}_sequential_importance_sampling 
-                      ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_classify_candidates
+                      ${PROJECT_NAME}_grasp_detector
+                      ${PROJECT_NAME}_sequential_importance_sampling
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_grasp_detector 
-                      ${PROJECT_NAME}_caffe_classifier 
-                      ${PROJECT_NAME}_clustering 
-                      ${PROJECT_NAME}_learning 
-                      ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+target_link_libraries(${PROJECT_NAME}_grasp_detector
+                      ${PROJECT_NAME}_caffe_classifier
+                      ${PROJECT_NAME}_clustering
+                      ${PROJECT_NAME}_learning
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES}
                       ${Caffe_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_grasp_image 
+target_link_libraries(${PROJECT_NAME}_grasp_image
                       ${OpenCV_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_grasp_image_15_channels 
+target_link_libraries(${PROJECT_NAME}_grasp_image_15_channels
                       ${PROJECT_NAME}_grasp_image)
 
-target_link_libraries(${PROJECT_NAME}_learning 
-                      ${PROJECT_NAME}_grasp_image_15_channels 
+target_link_libraries(${PROJECT_NAME}_learning
+                      ${PROJECT_NAME}_grasp_image_15_channels
                       ${GENERATOR_LIB})
 
-target_link_libraries(${PROJECT_NAME}_detect_grasps 
+target_link_libraries(${PROJECT_NAME}_detect_grasps
                       ${PROJECT_NAME}_grasp_detector
-                      ${PROJECT_NAME}_sequential_importance_sampling  
-                      ${GENERATOR_LIB}  
+                      ${PROJECT_NAME}_sequential_importance_sampling
+                      ${GENERATOR_LIB}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_sequential_importance_sampling 
+target_link_libraries(${PROJECT_NAME}_sequential_importance_sampling
                       ${PROJECT_NAME}_grasp_detector)
 
 target_link_libraries(${PROJECT_NAME}_test_occlusion
                       ${PROJECT_NAME}_learning
-                      ${GENERATOR_LIB} 
+                      ${GENERATOR_LIB}
                       ${catkin_LIBRARIES}
-                      ${PCL_LIBRARIES} 
+                      ${PCL_LIBRARIES}
                       ${Caffe_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}_learning
-                      ${GENERATOR_LIB} 
-                      ${catkin_LIBRARIES} 
+                      ${GENERATOR_LIB}
+                      ${catkin_LIBRARIES}
                       ${Caffe_LIBRARIES})
 
 
 # Rename targets to simplify their names.
-set_target_properties(${PROJECT_NAME}_detect_grasps 
-                      PROPERTIES OUTPUT_NAME detect_grasps 
+set_target_properties(${PROJECT_NAME}_detect_grasps
+                      PROPERTIES OUTPUT_NAME detect_grasps
                       PREFIX "")
 
-set_target_properties(${PROJECT_NAME}_classify_candidates 
-                      PROPERTIES OUTPUT_NAME classify_candidates 
+set_target_properties(${PROJECT_NAME}_classify_candidates
+                      PROPERTIES OUTPUT_NAME classify_candidates
                       PREFIX "")
 
 set_target_properties(${PROJECT_NAME}_create_grasp_images
-                      PROPERTIES OUTPUT_NAME create_grasp_images  
-                      PREFIX "")                      
+                      PROPERTIES OUTPUT_NAME create_grasp_images
+                      PREFIX "")
 
-set_target_properties(${PROJECT_NAME}_create_training_data 
-                      PROPERTIES OUTPUT_NAME create_training_data 
-                      PREFIX "")                      
-                      
+set_target_properties(${PROJECT_NAME}_create_training_data
+                      PROPERTIES OUTPUT_NAME create_training_data
+                      PREFIX "")
+
 set_target_properties(${PROJECT_NAME}_test_occlusion
-                      PROPERTIES OUTPUT_NAME test_occlusion 
-                      PREFIX "")                     
+                      PROPERTIES OUTPUT_NAME test_occlusion
+                      PREFIX "")

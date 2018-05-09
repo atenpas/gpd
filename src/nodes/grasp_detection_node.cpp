@@ -12,33 +12,35 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
 {
   cloud_camera_ = NULL;
 
+  nh_ = node; // Assign the NodeHandle to the private variable
+
   // set camera viewpoint to default origin
   std::vector<double> camera_position;
-  node.getParam("camera_position", camera_position);
+  nh_.getParam("camera_position", camera_position);
   view_point_ << camera_position[0], camera_position[1], camera_position[2];
 
   // choose sampling method for grasp detection
-  node.param("use_importance_sampling", use_importance_sampling_, false);
+  nh_.param("use_importance_sampling", use_importance_sampling_, false);
 
   if (use_importance_sampling_)
   {
-    importance_sampling_ = new SequentialImportanceSampling(node);
+    importance_sampling_ = new SequentialImportanceSampling(nh_);
   }
-  grasp_detector_ = new GraspDetector(node);
+  grasp_detector_ = new GraspDetector(nh_);
 
   // Read input cloud and sample ROS topics parameters.
   int cloud_type;
-  node.param("cloud_type", cloud_type, POINT_CLOUD_2);
+  nh_.param("cloud_type", cloud_type, POINT_CLOUD_2);
   std::string cloud_topic;
-  node.param("cloud_topic", cloud_topic, std::string("/camera/depth_registered/points"));
+  nh_.param("cloud_topic", cloud_topic, std::string("/camera/depth_registered/points"));
   std::string samples_topic;
-  node.param("samples_topic", samples_topic, std::string(""));
+  nh_.param("samples_topic", samples_topic, std::string(""));
   std::string rviz_topic;
-  node.param("rviz_topic", rviz_topic, std::string(""));
+  nh_.param("rviz_topic", rviz_topic, std::string(""));
 
   if (!rviz_topic.empty())
   {
-    grasps_rviz_pub_ = node.advertise<visualization_msgs::MarkerArray>(rviz_topic, 1);
+    grasps_rviz_pub_ = nh_.advertise<visualization_msgs::MarkerArray>(rviz_topic, 1);
     use_rviz_ = true;
   }
   else
@@ -48,12 +50,12 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
 
   // subscribe to input point cloud ROS topic
   if (cloud_type == POINT_CLOUD_2)
-    cloud_sub_ = node.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_callback, this);
+    cloud_sub_ = nh_.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_callback, this);
   else if (cloud_type == CLOUD_INDEXED)
-    cloud_sub_ = node.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_indexed_callback, this);
+    cloud_sub_ = nh_.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_indexed_callback, this);
   else if (cloud_type == CLOUD_SAMPLES)
   {
-    cloud_sub_ = node.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_samples_callback, this);
+    cloud_sub_ = nh_.subscribe(cloud_topic, 1, &GraspDetectionNode::cloud_samples_callback, this);
     //    grasp_detector_->setUseIncomingSamples(true);
     has_samples_ = false;
   }
@@ -61,14 +63,17 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   // subscribe to input samples ROS topic
   if (!samples_topic.empty())
   {
-    samples_sub_ = node.subscribe(samples_topic, 1, &GraspDetectionNode::samples_callback, this);
+    samples_sub_ = nh_.subscribe(samples_topic, 1, &GraspDetectionNode::samples_callback, this);
     has_samples_ = false;
   }
 
   // uses ROS topics to publish grasp candidates, antipodal grasps, and grasps after clustering
-  grasps_pub_ = node.advertise<gpd::GraspConfigList>("clustered_grasps", 10);
+  grasps_pub_ = nh_.advertise<gpd::GraspConfigList>("clustered_grasps", 10);
 
-  node.getParam("workspace", workspace_);
+  // Advertise the SetParameters service
+  srv_set_params_ = nh_.advertiseService("/gpd/set_params", &GraspDetectionNode::set_params_callback, this);
+
+  nh_.getParam("workspace", workspace_);
 }
 
 
@@ -104,6 +109,57 @@ void GraspDetectionNode::run()
   }
 }
 
+bool GraspDetectionNode::set_params_callback(gpd::SetParameters::Request &req, gpd::SetParameters::Response &resp)
+{
+  // Delete the existing sampler and detectors
+  if (use_importance_sampling_)
+  {
+    delete importance_sampling_;
+  }
+  delete grasp_detector_;
+
+  // Set the workspace from the request
+  if (req.set_workspace)
+  {
+    workspace_.clear();
+    for (int i = 0; i < req.workspace.size(); i++){
+
+      workspace_.push_back(req.workspace[i]);
+    }
+    nh_.setParam("workspace", workspace_);
+  }
+
+  // Set the workspace_grasps from the request
+  if (req.set_workspace_grasps)
+  {
+    std::vector<double> workspace_grasps;
+    for (int i = 0; i < req.workspace_grasps.size(); i++)
+    {
+      workspace_grasps.push_back(req.workspace_grasps[i]);
+    }
+    nh_.setParam("workspace_grasps", workspace_grasps);
+  }
+
+  if (req.set_camera_position)
+  {
+    view_point_ << req.camera_position[0], req.camera_position[1], req.camera_position[2];
+    std::vector<double> camera_position;
+    camera_position.push_back(view_point_.x());
+    camera_position.push_back(view_point_.y());
+    camera_position.push_back(view_point_.z());
+    nh_.setParam("camera_position", camera_position);
+  }
+
+  // Creating new sampler and detector so they load the new rosparams
+  if (use_importance_sampling_)
+  {
+    importance_sampling_ = new SequentialImportanceSampling(nh_);
+  }
+  grasp_detector_ = new GraspDetector(nh_);
+
+  resp.success = true;
+  return true;
+}
 
 std::vector<Grasp> GraspDetectionNode::detectGraspPosesInTopic()
 {
