@@ -17,6 +17,8 @@ as viable grasps or not, and clustering viable grasps which are geometrically si
 
 The reference for this package is: [High precision grasp pose detection in dense clutter](http://arxiv.org/abs/1603.01564).
 
+**Note:** A version of this package that does not require Caffe can be found [here](https://github.com/atenpas/gpd/tree/forward).
+
 ### UR5 Video
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=kfe5bNt35ZI
