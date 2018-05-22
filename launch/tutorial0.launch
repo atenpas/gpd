@@ -13,10 +13,7 @@
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
     <!-- Where the point cloud is stored -->
-<!--
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
--->
-    <param name="cloud_file_name" value="/home/ur5/.ros/2018-01-30_16_01_41_stitched_cloud.pcd" />
     
     <!-- Plotting parameters -->
     <param name="plot_normals" value="false" />
