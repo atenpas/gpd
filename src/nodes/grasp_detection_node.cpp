@@ -132,12 +132,17 @@ bool GraspDetectionNode::set_params_callback(gpd::SetParameters::Request &req, g
   // Set the workspace_grasps from the request
   if (req.set_workspace_grasps)
   {
+    nh_.setParam("filter_grasps", true);
     std::vector<double> workspace_grasps;
     for (int i = 0; i < req.workspace_grasps.size(); i++)
     {
       workspace_grasps.push_back(req.workspace_grasps[i]);
     }
     nh_.setParam("workspace_grasps", workspace_grasps);
+  }
+  else
+  {
+    nh_.setParam("filter_grasps", false);
   }
 
   if (req.set_camera_position)
