@@ -33,8 +33,28 @@ find_package(Caffe)
 include_directories(${Caffe_INCLUDE_DIRS})
 add_definitions(${Caffe_DEFINITIONS})
 
+# OpenVINO
+option(USE_OPENVINO "use OpenVINO toolkit" OFF)
+if(USE_OPENVINO STREQUAL "ON")
+  find_package(InferenceEngine 1.0)
+  if (NOT InferenceEngine_FOUND)
+    message(FATAL_ERROR "Please install OpenVINO https://software.intel.com/en-us/articles/OpenVINO-Install-Linux")
+  endif()
+  include_directories(${InferenceEngine_INCLUDE_DIRS})
+  link_directories(${InferenceEngine_LIBRARY_DIRS})
+  add_definitions(-DUSE_OPENVINO)
+  get_filename_component(MODELS_DIR "models/openvino" ABSOLUTE)
+  configure_file(include/gpd/openvino_classifier.h.in gpd/openvino_classifier.h)
+  include_directories(${CMAKE_CURRENT_BINARY_DIR})
+  set(classifier_src src/${PROJECT_NAME}/classifier.cpp src/${PROJECT_NAME}/openvino_classifier.cpp)
+  set(classifier_dep ${InferenceEngine_LIBRARIES})
+else()
+  set(classifier_src src/${PROJECT_NAME}/classifier.cpp src/${PROJECT_NAME}/caffe_classifier.cpp)
+  set(classifier_dep ${Caffe_LIBRARIES} ${OpenCV_LIBRARIES})
+endif()
+
 ## Set compiler optimization flags
-set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp -flto -Wno-deprecated -Wenum-compare")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DNDEBUG -O3 -fopenmp -flto -Wno-deprecated -Wenum-compare -std=c++11")
 # set(CMAKE_CXX_FLAGS "-DNDEBUG -O3 -fopenmp -flto -mavx -mfma -Wno-deprecated -Wenum-compare")
 
 ## Uncomment this if the package has a setup.py. This macro ensures
@@ -130,7 +150,7 @@ DEPENDS Eigen OpenCV PCL
 include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_INCLUDE_DIRS})
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}_caffe_classifier src/${PROJECT_NAME}/caffe_classifier.cpp)
+add_library(${PROJECT_NAME}_classifier ${classifier_src})
 add_library(${PROJECT_NAME}_clustering src/${PROJECT_NAME}/clustering.cpp)
 add_library(${PROJECT_NAME}_data_generator src/${PROJECT_NAME}/data_generator.cpp)
 add_library(${PROJECT_NAME}_grasp_detector src/${PROJECT_NAME}/grasp_detector.cpp)
@@ -158,9 +178,8 @@ add_executable(${PROJECT_NAME}_test_occlusion src/tests/test_occlusion.cpp)
 # add_dependencies(grasp_candidates_classifier_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(${PROJECT_NAME}_caffe_classifier
-                      ${Caffe_LIBRARIES}
-                      ${OpenCV_LIBRARIES})
+target_link_libraries(${PROJECT_NAME}_classifier
+                      ${classifier_dep})
 
 target_link_libraries(${PROJECT_NAME}_clustering
                       ${GENERATOR_LIB})
@@ -194,12 +213,12 @@ target_link_libraries(${PROJECT_NAME}_classify_candidates
                       ${PCL_LIBRARIES})
 
 target_link_libraries(${PROJECT_NAME}_grasp_detector
-                      ${PROJECT_NAME}_caffe_classifier
+                      ${PROJECT_NAME}_classifier
                       ${PROJECT_NAME}_clustering
                       ${PROJECT_NAME}_learning
                       ${GENERATOR_LIB}
                       ${catkin_LIBRARIES}
-                      ${Caffe_LIBRARIES})
+                      ${classifier_dep})
 
 target_link_libraries(${PROJECT_NAME}_grasp_image
                       ${OpenCV_LIBRARIES})
@@ -231,7 +250,6 @@ target_link_libraries(${PROJECT_NAME}_learning
                       ${GENERATOR_LIB}
                       ${catkin_LIBRARIES}
                       ${Caffe_LIBRARIES})
-
 
 # Rename targets to simplify their names.
 set_target_properties(${PROJECT_NAME}_detect_grasps
