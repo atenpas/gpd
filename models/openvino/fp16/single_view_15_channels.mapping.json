@@ -1,0 +1,90 @@
+[
+    {
+        "IR": {
+            "id": 0,
+            "name": "data",
+            "port": 0
+        },
+        "framework": {
+            "name": "data",
+            "port": "data"
+        }
+    },
+    {
+        "IR": {
+            "id": 1,
+            "name": "conv1",
+            "port": 3
+        },
+        "framework": {
+            "name": "conv1",
+            "port": "conv1"
+        }
+    },
+    {
+        "IR": {
+            "id": 2,
+            "name": "pool1",
+            "port": 1
+        },
+        "framework": {
+            "name": "pool1",
+            "port": "pool1"
+        }
+    },
+    {
+        "IR": {
+            "id": 3,
+            "name": "conv2",
+            "port": 3
+        },
+        "framework": {
+            "name": "conv2",
+            "port": "conv2"
+        }
+    },
+    {
+        "IR": {
+            "id": 4,
+            "name": "pool2",
+            "port": 1
+        },
+        "framework": {
+            "name": "pool2",
+            "port": "pool2"
+        }
+    },
+    {
+        "IR": {
+            "id": 5,
+            "name": "ip1",
+            "port": 3
+        },
+        "framework": {
+            "name": "ip1",
+            "port": "ip1"
+        }
+    },
+    {
+        "IR": {
+            "id": 6,
+            "name": "relu1",
+            "port": 1
+        },
+        "framework": {
+            "name": "relu1",
+            "port": "ip1"
+        }
+    },
+    {
+        "IR": {
+            "id": 7,
+            "name": "ip2",
+            "port": 3
+        },
+        "framework": {
+            "name": "ip2",
+            "port": "ip2"
+        }
+    }
+]
