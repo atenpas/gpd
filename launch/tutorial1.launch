@@ -1,17 +1,22 @@
 <launch>
-  
+
+  <arg name="device"                     default="0"
+        doc="target device to execute inference. [0:CPU]|1:GPU|2:VPU|3:FPGA" />
+
   <!-- Load hand geometry parameters -->  
   <include file="$(find gpd)/launch/hand_geometry.launch">
     <arg name="node" value="detect_grasps" />
   </include>
-  
-  <!-- Load classifier parameters -->  
+
+  <!-- Load classifier parameters -->
   <include file="$(find gpd)/launch/caffe/classifier_15channels.launch">
     <arg name="node" value="detect_grasps" />
   </include>
   
 	<node name="detect_grasps" pkg="gpd" type="detect_grasps" output="screen">
-    
+
+    <param name="device" type="int" value="$(arg device)" />
+
     <!-- If sequential importance sampling is used (default: false) -->
     <param name="use_importance_sampling" value="false" />
         
