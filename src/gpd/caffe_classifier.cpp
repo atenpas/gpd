@@ -1,15 +1,15 @@
 #include "../../include/gpd/caffe_classifier.h"
 
 
-CaffeClassifier::CaffeClassifier(const std::string& model_file, const std::string& weights_file, bool use_gpu)
+CaffeClassifier::CaffeClassifier(const std::string& model_file, const std::string& weights_file, Classifier::Device device)
 {
   // Initialize Caffe.
-  if (use_gpu)
+  switch (device)
   {
+  case Classifier::Device::eGPU:
     caffe::Caffe::set_mode(caffe::Caffe::GPU);
-  }
-  else
-  {
+    break;
+  default:
     caffe::Caffe::set_mode(caffe::Caffe::CPU);
   }
 

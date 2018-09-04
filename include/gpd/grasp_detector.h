@@ -37,11 +37,6 @@
 #include <algorithm>
 #include <vector>
 
-// Caffe
-#include "caffe/caffe.hpp"
-#include "caffe/layers/memory_data_layer.hpp"
-#include "caffe/util/io.hpp"
-
 // PCL
 #include <pcl/common/common.h>
 #include <pcl/filters/statistical_outlier_removal.h>
@@ -60,7 +55,7 @@
 #include <gpg/plot.h>
 
 // Custom
-#include "../gpd/caffe_classifier.h"
+#include "gpd/classifier.h"
 #include "../gpd/clustering.h"
 #include "../gpd/learning.h"
 
@@ -91,7 +86,6 @@ public:
     delete candidates_generator_;
     delete learning_;
     delete clustering_;
-    delete classifier_;
   }
   
   /**
@@ -184,7 +178,7 @@ private:
   CandidatesGenerator* candidates_generator_; ///< pointer to object for grasp candidate generation
   Learning* learning_; ///< pointer to object for grasp image creation
   Clustering* clustering_; ///< pointer to object for clustering geometrically aligned grasps
-  CaffeClassifier* classifier_; ///< pointer to object for classification of candidates
+  std::shared_ptr<Classifier> classifier_; ///< pointer to object for classification of candidates
 
   Learning::ImageParameters image_params_; // grasp image parameters
 
