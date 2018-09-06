@@ -109,6 +109,7 @@ The output should look similar to the screenshot shown below.
 
 1. [Detect Grasps With an RGBD camera](tutorials/tutorial_1_grasps_camera.md)
 2. [Detect Grasps on a Specific Object](tutorials/tutorial_2_grasp_select.md)
+3. [Detect Grasps with OpenVINO](tutorials/tutorial_openvino.md)
 
 
 ## 7) Parameters

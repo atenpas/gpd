@@ -33,7 +33,6 @@
 #ifndef CAFFE_CLASSIFIER_H_
 #define CAFFE_CLASSIFIER_H_
 
-
 // System
 #include <string>
 #include <vector>
@@ -46,6 +45,7 @@
 // OpenCV
 #include <opencv2/core/core.hpp>
 
+#include "gpd/classifier.h"
 
 /** CaffeClassifier class
  *
@@ -54,7 +54,7 @@
  * This class classifies grasps as viable or not using a convolutional neural network (CNN) in the Caffe framework.
  *
  */
-class CaffeClassifier
+class CaffeClassifier : public Classifier
 {
   public:
 
@@ -63,7 +63,7 @@ class CaffeClassifier
      * \param model_file the location of the file that describes the network model
      * \param weights_file the location of the file that contains the network weights
      */
-    CaffeClassifier(const std::string& model_file, const std::string& weights_file, bool use_gpu = true);
+    CaffeClassifier(const std::string& model_file, const std::string& weights_file, Classifier::Device device);
 
     /**
      * \brief Classify grasp candidates as viable grasps or not.
