@@ -23,15 +23,13 @@ find_library(GENERATOR_LIB grasp_candidates_generator)
 find_path(GENERATOR_LIB_INCLUDE_DIR gpg/grasp.h)
 include_directories(${GENERATOR_LIB_INCLUDE_DIR})
 
-# CAFFE
-# IF(NOT EXISTS ${CAFFE_DIR})
-  # SET(CAFFE_DIR "$ENV{CAFFE_DIR}")
-  # SET(CAFFE_DIR "/home/andreas/software/caffe/build")
-# ENDIF()
-# MESSAGE("CAFFE_DIR: " ${CAFFE_DIR})
-find_package(Caffe)
-include_directories(${Caffe_INCLUDE_DIRS})
-add_definitions(${Caffe_DEFINITIONS})
+# Caffe
+option(USE_CAFFE "use Caffe framework" OFF)
+if(USE_CAFFE STREQUAL "ON")
+  find_package(Caffe)
+  include_directories(${Caffe_INCLUDE_DIRS})
+  add_definitions(${Caffe_DEFINITIONS})
+endif()
 
 # OpenVINO
 option(USE_OPENVINO "use OpenVINO toolkit" OFF)
@@ -152,7 +150,9 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${PCL_INCLUDE_DIRS} ${OpenCV_
 ## Declare a C++ library
 add_library(${PROJECT_NAME}_classifier ${classifier_src})
 add_library(${PROJECT_NAME}_clustering src/${PROJECT_NAME}/clustering.cpp)
-add_library(${PROJECT_NAME}_data_generator src/${PROJECT_NAME}/data_generator.cpp)
+if(USE_CAFFE STREQUAL "ON")
+  add_library(${PROJECT_NAME}_data_generator src/${PROJECT_NAME}/data_generator.cpp)
+endif()
 add_library(${PROJECT_NAME}_grasp_detector src/${PROJECT_NAME}/grasp_detector.cpp)
 add_library(${PROJECT_NAME}_learning src/${PROJECT_NAME}/learning.cpp)
 add_library(${PROJECT_NAME}_sequential_importance_sampling src/${PROJECT_NAME}/sequential_importance_sampling.cpp)
@@ -168,10 +168,13 @@ add_library(${PROJECT_NAME}_grasp_image_15_channels src/${PROJECT_NAME}/grasp_im
 add_executable(${PROJECT_NAME}_detect_grasps src/nodes/grasp_detection_node.cpp)
 add_executable(${PROJECT_NAME}_generate_candidates src/nodes/generate_candidates.cpp)
 add_executable(${PROJECT_NAME}_create_grasp_images src/nodes/create_grasp_images.cpp)
-add_executable(${PROJECT_NAME}_create_training_data src/nodes/create_training_data.cpp)
+if(USE_CAFFE STREQUAL "ON")
+  add_executable(${PROJECT_NAME}_create_training_data src/nodes/create_training_data.cpp)
+endif()
 add_executable(${PROJECT_NAME}_classify_candidates src/nodes/classify_candidates.cpp)
-add_executable(${PROJECT_NAME}_test_occlusion src/tests/test_occlusion.cpp)
-
+if(USE_CAFFE STREQUAL "ON")
+  add_executable(${PROJECT_NAME}_test_occlusion src/tests/test_occlusion.cpp)
+endif()
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -190,15 +193,19 @@ target_link_libraries(${PROJECT_NAME}_create_grasp_images
                       ${catkin_LIBRARIES}
                       ${PCL_LIBRARIES})
 
-target_link_libraries(${PROJECT_NAME}_create_training_data
+if(USE_CAFFE STREQUAL "ON")
+  target_link_libraries(${PROJECT_NAME}_create_training_data
                       ${PROJECT_NAME}_data_generator)
+endif()
 
-target_link_libraries(${PROJECT_NAME}_data_generator
-                      ${PROJECT_NAME}_learning
-                      ${GENERATOR_LIB}
-                      ${Caffe_LIBRARIES}
-                      ${catkin_LIBRARIES}
-                      ${PCL_LIBRARIES})
+if(USE_CAFFE STREQUAL "ON")
+  target_link_libraries(${PROJECT_NAME}_data_generator
+                        ${PROJECT_NAME}_learning
+                        ${GENERATOR_LIB}
+                        ${Caffe_LIBRARIES}
+                        ${catkin_LIBRARIES}
+                        ${PCL_LIBRARIES})
+endif()
 
 target_link_libraries(${PROJECT_NAME}_generate_candidates
                       ${GENERATOR_LIB}
@@ -239,12 +246,14 @@ target_link_libraries(${PROJECT_NAME}_detect_grasps
 target_link_libraries(${PROJECT_NAME}_sequential_importance_sampling
                       ${PROJECT_NAME}_grasp_detector)
 
-target_link_libraries(${PROJECT_NAME}_test_occlusion
-                      ${PROJECT_NAME}_learning
-                      ${GENERATOR_LIB}
-                      ${catkin_LIBRARIES}
-                      ${PCL_LIBRARIES}
-                      ${Caffe_LIBRARIES})
+if(USE_CAFFE STREQUAL "ON")
+  target_link_libraries(${PROJECT_NAME}_test_occlusion
+                        ${PROJECT_NAME}_learning
+                        ${GENERATOR_LIB}
+                        ${catkin_LIBRARIES}
+                        ${PCL_LIBRARIES}
+                        ${Caffe_LIBRARIES})
+endif()
 
 target_link_libraries(${PROJECT_NAME}_learning
                       ${GENERATOR_LIB}
@@ -264,10 +273,14 @@ set_target_properties(${PROJECT_NAME}_create_grasp_images
                       PROPERTIES OUTPUT_NAME create_grasp_images
                       PREFIX "")
 
-set_target_properties(${PROJECT_NAME}_create_training_data
+if(USE_CAFFE STREQUAL "ON")
+  set_target_properties(${PROJECT_NAME}_create_training_data
                       PROPERTIES OUTPUT_NAME create_training_data
                       PREFIX "")
+endif()
 
-set_target_properties(${PROJECT_NAME}_test_occlusion
-                      PROPERTIES OUTPUT_NAME test_occlusion
-                      PREFIX "")
+if(USE_CAFFE STREQUAL "ON")
+  set_target_properties(${PROJECT_NAME}_test_occlusion
+                        PROPERTIES OUTPUT_NAME test_occlusion
+                        PREFIX "")
+endif()

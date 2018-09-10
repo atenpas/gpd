@@ -1,5 +1,8 @@
 <launch>
   
+  <arg name="device"                     default="0"
+        doc="target device to execute inference. [0:CPU]|1:GPU|2:VPU|3:FPGA" />
+
   <!-- Load hand geometry parameters -->  
   <include file="$(find gpd)/launch/hand_geometry.launch">
     <arg name="node" value="classify_grasp_candidates" />
@@ -12,6 +15,8 @@
   
 	<node name="classify_grasp_candidates" pkg="gpd" type="classify_candidates" output="screen">
     
+    <param name="device" type="int" value="$(arg device)" />
+
     <!-- Where the point cloud is stored -->
     <param name="cloud_file_name" value="$(find gpd)/tutorials/krylon.pcd" />
     
@@ -52,7 +57,7 @@
     <param name="min_inliers" value="10" /> <!-- min inliers in each cluster; set to 0 to avoid clustering -->
     
     <!-- Grasp selection -->
-    <param name="min_score_diff" value="0" /> <!-- Threshold to sort out grasps with low scores -->
+    <param name="min_score_diff" value="-500" /> <!-- Threshold to sort out grasps with low scores -->
     <param name="num_selected" value="100" /> <!-- The number of selected grasps (sorted by score) -->
         
 	</node>

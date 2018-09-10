@@ -14,6 +14,10 @@ Then try to run OpenVINO inference example applications.
 [Running the Samples](https://software.intel.com/en-us/articles/OpenVINO-InferEngine#inpage-nav-7)
 
 ## 3. Build GPD with OpenVINO
+Setup OpenVINO environment variables, replacing <OPENVINO_INSTALL_DIR> with the specific location.
+```
+source <OPENVINO_INSTALL_DIR>/bin/setupvars.sh
+```
 Once OpenVINO installed, build GPD with option "USE_OPENVINO" ([OFF]|ON)
 ```
 catkin_make -DCMAKE_BUILD_TYPE=Release -DUSE_OPENVINO=ON --pkg gpd
