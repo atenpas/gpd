@@ -24,7 +24,7 @@ find_path(GENERATOR_LIB_INCLUDE_DIR gpg/grasp.h)
 include_directories(${GENERATOR_LIB_INCLUDE_DIR})
 
 # Caffe
-option(USE_CAFFE "use Caffe framework" OFF)
+option(USE_CAFFE "use Caffe framework" ON)
 if(USE_CAFFE STREQUAL "ON")
   find_package(Caffe)
   include_directories(${Caffe_INCLUDE_DIRS})
