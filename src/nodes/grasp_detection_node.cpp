@@ -1,4 +1,4 @@
-#include "../../../gpd/include/nodes/grasp_detection_node.h"
+#include "nodes/grasp_detection_node.h"
 
 
 /** constants for input point cloud types */

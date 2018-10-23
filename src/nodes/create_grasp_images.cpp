@@ -8,7 +8,7 @@
 #include <gpg/cloud_camera.h>
 #include <gpg/candidates_generator.h>
 
-#include "../../include/gpd/learning.h"
+#include "gpd/learning.h"
 
 
 CandidatesGenerator createCandidatesGenerator(ros::NodeHandle& node)

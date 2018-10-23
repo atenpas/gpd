@@ -34,7 +34,7 @@
 #define GRASP_IMAGE_15_CHANNELS_H_
 
 
-#include "../gpd/grasp_image.h"
+#include "gpd/grasp_image.h"
 
 
 /**

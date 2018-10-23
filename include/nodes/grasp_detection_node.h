@@ -61,9 +61,9 @@
 #include <gpd/SamplesMsg.h>
 
 // this project (headers)
-#include "../gpd/grasp_detector.h"
-#include "../gpd/grasp_plotter.h"
-#include "../gpd/sequential_importance_sampling.h"
+#include "gpd/grasp_detector.h"
+#include "gpd/grasp_plotter.h"
+#include "gpd/sequential_importance_sampling.h"
 
 
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGBA;

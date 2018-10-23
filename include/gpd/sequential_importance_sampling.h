@@ -44,7 +44,7 @@
 #include <gpg/cloud_camera.h>
 #include <gpg/plot.h>
 
-#include "../gpd/grasp_detector.h"
+#include "gpd/grasp_detector.h"
 
 
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGB;

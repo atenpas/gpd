@@ -37,8 +37,8 @@
 #include <gpg/cloud_camera.h>
 
 // Custom
-#include "../../include/gpd/grasp_detector.h"
-#include "../../include/gpd/sequential_importance_sampling.h"
+#include "gpd/grasp_detector.h"
+#include "gpd/sequential_importance_sampling.h"
 
 
 int main(int argc, char* argv[]) 
