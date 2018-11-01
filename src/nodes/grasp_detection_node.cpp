@@ -1,4 +1,5 @@
-#include "../../../gpd/include/nodes/grasp_detection_node.h"
+#include "nodes/grasp_detection_node.h"
+#include "nodes/ros_params.h"
 
 
 /** constants for input point cloud types */
@@ -22,11 +23,15 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   // choose sampling method for grasp detection
   nh_.param("use_importance_sampling", use_importance_sampling_, false);
 
+  GraspDetector::GraspDetectionParameters detection_param;
+  ROSParameters::getDetectionParams(nh_, detection_param);
+  SequentialImportanceSampling::SISamplingParameters sampling_param;
+  ROSParameters::getSamplingParams(nh_, sampling_param);
+  grasp_detector_ = new GraspDetector(detection_param);
   if (use_importance_sampling_)
   {
-    importance_sampling_ = new SequentialImportanceSampling(nh_);
+    importance_sampling_ = new SequentialImportanceSampling(sampling_param, detection_param);
   }
-  grasp_detector_ = new GraspDetector(nh_);
 
   // Read input cloud and sample ROS topics parameters.
   int cloud_type;
@@ -155,12 +160,17 @@ bool GraspDetectionNode::set_params_callback(gpd::SetParameters::Request &req, g
     nh_.setParam("camera_position", camera_position);
   }
 
+  GraspDetector::GraspDetectionParameters detection_param;
+  ROSParameters::getDetectionParams(nh_, detection_param);
+  SequentialImportanceSampling::SISamplingParameters sampling_param;
+  ROSParameters::getSamplingParams(nh_, sampling_param);
+
   // Creating new sampler and detector so they load the new rosparams
   if (use_importance_sampling_)
   {
-    importance_sampling_ = new SequentialImportanceSampling(nh_);
+    importance_sampling_ = new SequentialImportanceSampling(sampling_param, detection_param);
   }
-  grasp_detector_ = new GraspDetector(nh_);
+  grasp_detector_ = new GraspDetector(detection_param);
 
   resp.success = true;
   return true;

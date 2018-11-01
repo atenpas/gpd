@@ -37,9 +37,9 @@
 #include <gpg/cloud_camera.h>
 
 // Custom
-#include "../../include/gpd/grasp_detector.h"
-#include "../../include/gpd/sequential_importance_sampling.h"
-
+#include "gpd/grasp_detector.h"
+#include "gpd/sequential_importance_sampling.h"
+#include "nodes/ros_params.h"
 
 int main(int argc, char* argv[]) 
 {
@@ -68,9 +68,14 @@ int main(int argc, char* argv[])
   bool use_importance_sampling;
   node.param("use_importance_sampling", use_importance_sampling, false);
 
+  GraspDetector::GraspDetectionParameters detection_param;
+  ROSParameters::getDetectionParams(node, detection_param);
+  SequentialImportanceSampling::SISamplingParameters sampling_param;
+  ROSParameters::getSamplingParams(node, sampling_param);
+
   if (use_importance_sampling)
   {
-    SequentialImportanceSampling detector(node);
+    SequentialImportanceSampling detector(sampling_param, detection_param);
 
     // Preprocess the point cloud (voxelize, workspace, etc.).
     detector.preprocessPointCloud(cloud_cam);
@@ -80,7 +85,7 @@ int main(int argc, char* argv[])
   }
   else
   {
-    GraspDetector detector(node);
+    GraspDetector detector(detection_param);
 
     // Preprocess the point cloud (voxelize, workspace, etc.).
     detector.preprocessPointCloud(cloud_cam);

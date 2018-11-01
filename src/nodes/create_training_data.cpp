@@ -1,5 +1,6 @@
 // Custom
-#include "../../include/gpd/data_generator.h"
+#include "gpd/data_generator.h"
+#include "nodes/ros_params.h"
 
 
 int main(int argc, char** argv)
@@ -12,8 +13,10 @@ int main(int argc, char** argv)
   ros::NodeHandle node("~");
 
   // Create training data.
-  DataGenerator generator(node);
-  generator.createTrainingData(node);
+  DataGenerator::DataGenerationParameters param;
+  ROSParameters::getGeneratorParams(node, param);
+  DataGenerator generator(param);
+  generator.createTrainingData();
 
   return 0;
 }
