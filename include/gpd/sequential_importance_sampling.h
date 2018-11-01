@@ -34,8 +34,6 @@
 #define SEQUENTIAL_IMPORTANCE_SAMPLING_H
 
 
-#include <ros/ros.h>
-
 #include <pcl/point_types.h>
 #include <pcl/point_cloud.h>
 
@@ -44,7 +42,7 @@
 #include <gpg/cloud_camera.h>
 #include <gpg/plot.h>
 
-#include "../gpd/grasp_detector.h"
+#include "gpd/grasp_detector.h"
 
 
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGB;
@@ -64,11 +62,45 @@ class SequentialImportanceSampling
 {
 public:
 
+  struct SISamplingParameters
+  {
+    // sequential importance sampling parameters
+    int num_init_samples_; ///< number of initial samples
+    int num_iterations_; ///< number of iterations of Sequential Importance Sampling
+    int num_samples_; ///< number of samples to use in each iteration
+    double prob_rand_samples_; ///< probability of random samples
+    double radius_; ///< radius
+    int sampling_method_; ///< what sampling method is used (sum, max, weighted)
+
+    // visualization parameters
+    bool visualize_rounds_; ///< if all iterations are visualized
+    bool visualize_steps_; ///< if all grasp candidates and all valid grasps are visualized
+    bool visualize_results_; ///< if the final results are visualized
+
+    // grasp filtering parameters
+    bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace
+    int num_threads_; ///< number of CPU threads used in grasp detection
+
+    std::vector<double> workspace_; ///< the robot's workspace
+    std::vector<double> workspace_grasps_; ///< the robot's workspace
+  };
+
+  // standard parameters
+  static const int NUM_ITERATIONS;
+  static const int NUM_SAMPLES;
+  static const int NUM_INIT_SAMPLES;
+  static const double PROB_RAND_SAMPLES;
+  static const double RADIUS;
+  static const bool VISUALIZE_STEPS;
+  static const bool VISUALIZE_RESULTS;
+  static const int SAMPLING_METHOD;
+
   /**
    * \brief Constructor.
-   * \param node ROS node handle
+   * \param si_param Sequential importance sampling parameters
+   * \param param Grasp detection paramters
    */
-  SequentialImportanceSampling(ros::NodeHandle& node);
+  SequentialImportanceSampling(SISamplingParameters& si_param, GraspDetector::GraspDetectionParameters& gd_param);
 
   /**
    * \brief Destructor.
@@ -143,37 +175,8 @@ private:
   void drawWeightedSamples(const std::vector<Grasp>& hands, Gaussian& generator, double sigma, int num_gauss_samples,
     Eigen::Matrix3Xd& samples_out);
 
+  SISamplingParameters param_;
   GraspDetector* grasp_detector_; ///< pointer to object for grasp detection
-
-  // sequential importance sampling parameters
-  int num_iterations_; ///< number of iterations of Sequential Importance Sampling
-  int num_samples_; ///< number of samples to use in each iteration
-  int num_init_samples_; ///< number of initial samples
-  double prob_rand_samples_; ///< probability of random samples
-  double radius_; ///< radius
-  int sampling_method_; ///< what sampling method is used (sum, max, weighted)
-
-  // visualization parameters
-  bool visualize_rounds_; ///< if all iterations are visualized
-  bool visualize_steps_; ///< if all grasp candidates and all valid grasps are visualized
-  bool visualize_results_; ///< if the final results are visualized
-
-  // grasp filtering parameters
-  bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace
-  std::vector<double> workspace_; ///< the robot's workspace
-  std::vector<double> workspace_grasps_; ///< the robot's workspace
-
-  int num_threads_; ///< number of CPU threads used in grasp detection
-
-  // standard parameters
-  static const int NUM_ITERATIONS;
-  static const int NUM_SAMPLES;
-  static const int NUM_INIT_SAMPLES;
-  static const double PROB_RAND_SAMPLES;
-  static const double RADIUS;
-  static const bool VISUALIZE_STEPS;
-  static const bool VISUALIZE_RESULTS;
-  static const int SAMPLING_METHOD;
 };
 
 #endif /* SEQUENTIAL_IMPORTANCE_SAMPLING_H */

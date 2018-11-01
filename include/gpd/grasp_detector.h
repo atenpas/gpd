@@ -44,9 +44,6 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-// ROS
-#include <ros/ros.h>
-
 // Grasp Candidates Generator
 #include <gpg/cloud_camera.h>
 #include <gpg/candidates_generator.h>
@@ -56,8 +53,8 @@
 
 // Custom
 #include "gpd/classifier.h"
-#include "../gpd/clustering.h"
-#include "../gpd/learning.h"
+#include "gpd/clustering.h"
+#include "gpd/learning.h"
 
 
 /** GraspDetector class
@@ -72,11 +69,44 @@ class GraspDetector
 {
 public:
 
+  struct GraspDetectionParameters
+  {
+    CandidatesGenerator::Parameters generator_params;
+    HandSearch::Parameters hand_search_params;
+    Learning::ImageParameters image_params; // grasp image parameters
+
+    // classification parameters
+    std::string model_file_, weights_file_;
+    int device_;
+    double min_score_diff_; ///< minimum classifier confidence score
+    bool create_image_batches_; ///< if images are created in batches (reduces memory usage)
+
+    // plotting parameters
+    bool plot_normals_; ///< if normals are plotted
+    bool plot_samples_; ///< if samples/indices are plotted
+    bool plot_filtered_grasps_; ///< if filtered grasps are plotted
+    bool plot_valid_grasps_; ///< if positive grasp instances are plotted
+    bool plot_clusters_; ///< if grasp clusters are plotted
+    bool plot_selected_grasps_; ///< if selected grasps are plotted
+
+    std::vector<double> workspace_; ///< the workspace of the robot
+    bool remove_plane_;
+
+    // filtering parameters
+    bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace and the robot hand width
+    bool filter_half_antipodal_; ///< if grasps are filtered based on being half-antipodal
+    std::vector<double> gripper_width_range_;
+    int min_inliers_;
+
+    // selection parameters
+    int num_selected_; ///< the number of selected grasps
+  };
+
   /**
    * \brief Constructor.
-   * \param node ROS node handle
+   * \param param Grasp detection parameters
    */
-  GraspDetector(ros::NodeHandle& node);
+  GraspDetector(GraspDetectionParameters& param);
 
   /**
    * \brief Destructor.
@@ -87,7 +117,7 @@ public:
     delete learning_;
     delete clustering_;
   }
-  
+
   /**
    * \brief Preprocess the point cloud.
    * \param cloud_cam the point cloud
@@ -174,37 +204,14 @@ public:
 
 
 private:
-
+  GraspDetectionParameters param_;
   CandidatesGenerator* candidates_generator_; ///< pointer to object for grasp candidate generation
   Learning* learning_; ///< pointer to object for grasp image creation
   Clustering* clustering_; ///< pointer to object for clustering geometrically aligned grasps
   std::shared_ptr<Classifier> classifier_; ///< pointer to object for classification of candidates
-
-  Learning::ImageParameters image_params_; // grasp image parameters
-
-  // classification parameters
-  double min_score_diff_; ///< minimum classifier confidence score
-  bool create_image_batches_; ///< if images are created in batches (reduces memory usage)
-
-  // plotting parameters
-  bool plot_normals_; ///< if normals are plotted
-  bool plot_samples_; ///< if samples/indices are plotted
-  bool plot_filtered_grasps_; ///< if filtered grasps are plotted
-  bool plot_valid_grasps_; ///< if positive grasp instances are plotted
-  bool plot_clusters_; ///< if grasp clusters are plotted
-  bool plot_selected_grasps_; ///< if selected grasps are plotted
-
-  // filtering parameters
-  bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace and the robot hand width
-  bool filter_half_antipodal_; ///< if grasps are filtered based on being half-antipodal
   bool cluster_grasps_; ///< if grasps are clustered
   double outer_diameter_; ///< the outer diameter of the robot hand
   double min_aperture_; ///< the minimum opening width of the robot hand
   double max_aperture_; ///< the maximum opening width of the robot hand
-  std::vector<double> workspace_; ///< the workspace of the robot
-
-  // selection parameters
-  int num_selected_; ///< the number of selected grasps
 };
-
 #endif /* GRASP_DETECTOR_H_ */

@@ -16,7 +16,7 @@
 #include <gpg/cloud_camera.h>
 #include <gpg/candidates_generator.h>
 
-#include "../gpd/learning.h"
+#include "gpd/learning.h"
 
 
 struct Instance
@@ -32,11 +32,28 @@ class DataGenerator
 {
   public:
 
+    struct DataGenerationParameters
+    {
+      CandidatesGenerator::Parameters generator_params;
+      HandSearch::Parameters hand_search_params;
+      Learning::ImageParameters image_params;
+      bool remove_plane;
+      int num_orientations;
+      int num_threads;
+
+      Eigen::Matrix3Xd view_points;
+      std::string filename;
+
+      std::string data_root, objects_file_location, output_root;
+      bool plot_grasps;
+      int num_views;
+    };
+
     /**
      * \brief Constructor.
-     * \param node ROS node handle
+     * \param param Data generation parameter
      */
-    DataGenerator(ros::NodeHandle& node);
+    DataGenerator(DataGenerationParameters& param);
 
     /**
      * \brief Destructor.
@@ -45,40 +62,24 @@ class DataGenerator
 
     /**
      * \brief Create training data.
-     * \param node ROS node handle
      */
-    void createTrainingData(ros::NodeHandle& node);
+    void createTrainingData();
 
 
   private:
 
     /**
-     * \brief Create a grasp candidates generator.
-     * \param node ROS node handle
-     * \return the grasp candidates generator
-     */
-    CandidatesGenerator* createCandidatesGenerator(ros::NodeHandle& node);
-
-    /**
-     * \brief Create a learning object to generate grasp images.
-     * \param node ROS node handle
-     * \return the learning object
-     */
-    Learning* createLearning(ros::NodeHandle& node);
-
-    /**
      * \brief Create grasp images.
-     * \param node ROS node handle
+     * \param param Data generation parameter
      * \return the grasp candidates generator
      */
     bool createGraspImages(CloudCamera& cloud_cam, std::vector<Grasp>& grasps_out, std::vector<cv::Mat>& images_out);
 
     /**
      * \brief Load a point cloud given ROS launch parameters.
-     * \param node ROS node handle
      * \return the point cloud
      */
-    CloudCamera loadCloudCameraFromFile(ros::NodeHandle& node);
+    CloudCamera loadCloudCameraFromFile();
 
     /**
      * \brief Load a point cloud and surface normals given ROS launch parameters.
@@ -131,6 +132,7 @@ class DataGenerator
      */
     void storeLMDB(const std::vector<Instance>& dataset, const std::string& file_location);
 
+    DataGenerationParameters param_;
     CandidatesGenerator* candidates_generator_; ///< object to generate grasp candidates
     Learning* learning_; ///< object to generate grasp images
 };

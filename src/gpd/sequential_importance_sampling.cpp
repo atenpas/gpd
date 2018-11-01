@@ -1,4 +1,4 @@
-#include "../../include/gpd/sequential_importance_sampling.h"
+#include "gpd/sequential_importance_sampling.h"
 
 
 // methods for sampling from a set of Gaussians
@@ -16,24 +16,10 @@ const bool SequentialImportanceSampling::VISUALIZE_RESULTS = true;
 const int SequentialImportanceSampling::SAMPLING_METHOD = SUM_OF_GAUSSIANS;
 
 
-SequentialImportanceSampling::SequentialImportanceSampling(ros::NodeHandle& node)
+SequentialImportanceSampling::SequentialImportanceSampling(SISamplingParameters& si_param, GraspDetector::GraspDetectionParameters& gd_param)
 {
-  node.param("num_init_samples", num_init_samples_, NUM_INIT_SAMPLES);
-  node.param("num_iterations", num_iterations_, NUM_ITERATIONS);
-  node.param("num_samples_per_iteration", num_samples_, NUM_SAMPLES);
-  node.param("prob_rand_samples", prob_rand_samples_, PROB_RAND_SAMPLES);
-  node.param("std", radius_, RADIUS);
-  node.param("sampling_method", sampling_method_, SAMPLING_METHOD);
-  node.param("visualize_rounds", visualize_rounds_, false);
-  node.param("visualize_steps", visualize_steps_, VISUALIZE_STEPS);
-  node.param("visualize_results", visualize_results_, VISUALIZE_RESULTS);
-  node.param("filter_grasps", filter_grasps_, false);
-  node.param("num_threads", num_threads_, 1);
-
-  node.getParam("workspace", workspace_);
-  node.getParam("workspace_grasps", workspace_grasps_);
-
-  grasp_detector_ = new GraspDetector(node);
+  param_ = si_param;
+  grasp_detector_ = new GraspDetector(gd_param);
 }
 
 
@@ -42,7 +28,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   // Check if the point cloud is empty.
   if (cloud_cam_in.getCloudOriginal()->size() == 0)
   {
-    ROS_INFO("Point cloud is empty!");
+    std::cout << "Point cloud is empty!" << std::endl;
     std::vector<Grasp> grasps(0);
     return grasps;
   }
@@ -53,7 +39,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   const PointCloudRGB::Ptr& cloud = cloud_cam.getCloudProcessed();
 
   // 1. Find initial grasp hypotheses.
-  cloud_cam.subsampleUniformly(num_init_samples_);
+  cloud_cam.subsampleUniformly(param_.num_init_samples_);
   std::vector<GraspSet> hand_set_list = grasp_detector_->generateGraspCandidates(cloud_cam);
   std::cout << "Initially detected " << hand_set_list.size() << " grasp hypotheses" << std::endl;
   if (hand_set_list.size() == 0)
@@ -64,13 +50,13 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 
   // Filter grasps outside of workspace and robot hand dimensions.
   std::vector<GraspSet> filtered_candidates;
-  if (filter_grasps_)
+  if (param_.filter_grasps_)
   {
-    grasp_detector_->filterGraspsWorkspace(hand_set_list, workspace_grasps_);
-    ROS_INFO_STREAM("Number of grasps within workspace: " << filtered_candidates.size());
+    grasp_detector_->filterGraspsWorkspace(hand_set_list, param_.workspace_grasps_);
+    std::cout << "Number of grasps within workspace: " << filtered_candidates.size() << std::endl;
   }
 
-  if (visualize_rounds_)
+  if (param_.visualize_rounds_)
   {
     plotter.plotFingers(hand_set_list, cloud_cam.getCloudOriginal(), "Initial Grasps");
   }
@@ -79,7 +65,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 //  classified_grasps = grasp_detector_->classifyGraspCandidates(cloud_cam, hands);
 //  std::cout << "Predicted " << filtered_candidates.size() << " valid grasps.\n";
 //
-//  if (visualize_steps_)
+//  if (param_.visualize_steps_)
 //  {
 //    plotter.plotFingers(classified_grasps, cloud_cam.getCloudOriginal(), "Initial Grasps");
 //  }
@@ -95,9 +81,9 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 //  }
 
   // 2. Create random generator for normal distribution.
-  int num_rand_samples = prob_rand_samples_ * num_samples_;
-  int num_gauss_samples = num_samples_ - num_rand_samples;
-  double sigma = radius_;
+  int num_rand_samples = param_.prob_rand_samples_ * param_.num_samples_;
+  int num_gauss_samples = param_.num_samples_ - num_rand_samples;
+  double sigma = param_.radius_;
   Eigen::Matrix3d diag_sigma = Eigen::Matrix3d::Zero();
   diag_sigma.diagonal() << sigma, sigma, sigma;
   Eigen::Matrix3d inv_sigma = diag_sigma.inverse();
@@ -106,20 +92,20 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   rng->seed(time(NULL));
   boost::normal_distribution<> distribution(0.0, 1.0);
   boost::variate_generator<boost::mt19937, boost::normal_distribution<> > generator(*rng, distribution);
-  Eigen::Matrix3Xd samples(3, num_samples_);
+  Eigen::Matrix3Xd samples(3, param_.num_samples_);
 //  std::vector<GraspHypothesis> hands_new = hands;
 
   // 3. Find grasp hypotheses using importance sampling.
-  for (int i = 0; i < num_iterations_; i++)
+  for (int i = 0; i < param_.num_iterations_; i++)
   {
     std::cout << i << " " << num_gauss_samples << std::endl;
 
     // 3.1 Draw samples close to affordances (importance sampling).
-    if (this->sampling_method_ == SUM_OF_GAUSSIANS)
+    if (this->param_.sampling_method_ == SUM_OF_GAUSSIANS)
     {
       drawSamplesFromSumOfGaussians(hand_set_list, generator, sigma, num_gauss_samples, samples);
     }
-    else if (this->sampling_method_ == MAX_OF_GAUSSIANS) // max of Gaussians
+    else if (this->param_.sampling_method_ == MAX_OF_GAUSSIANS) // max of Gaussians
     {
       drawSamplesFromMaxOfGaussians(hand_set_list, generator, sigma, num_gauss_samples, samples, term);
     }
@@ -129,7 +115,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
     }
 
     // 3.2 Draw random samples.
-    for (int j = num_samples_ - num_rand_samples; j < num_samples_; j++)
+    for (int j = param_.num_samples_ - num_rand_samples; j < param_.num_samples_; j++)
     {
       int r = std::rand() % cloud->points.size();
 //      while (!pcl::isFinite((*cloud)[r])
@@ -142,15 +128,15 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
     cloud_cam.setSamples(samples);
     std::vector<GraspSet> hand_set_list_new = grasp_detector_->generateGraspCandidates(cloud_cam);
 
-    if (filter_grasps_)
+    if (param_.filter_grasps_)
     {
-      grasp_detector_->filterGraspsWorkspace(hand_set_list_new, workspace_grasps_);
-      ROS_INFO_STREAM("Number of grasps within gripper width range and workspace: " << hand_set_list_new.size());
+      grasp_detector_->filterGraspsWorkspace(hand_set_list_new, param_.workspace_grasps_);
+      std::cout << "Number of grasps within gripper width range and workspace: " << hand_set_list_new.size() << std::endl;
     }
 
     hand_set_list.insert(hand_set_list.end(), hand_set_list_new.begin(), hand_set_list_new.end());
 
-    if (visualize_rounds_)
+    if (param_.visualize_rounds_)
     {
       plotter.plotSamples(samples, cloud);
       plotter.plotFingers(hand_set_list_new, cloud_cam.getCloudProcessed(), "New Grasps");
@@ -159,7 +145,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
     std::cout << "Added: " << hand_set_list_new.size() << ", total: " << hand_set_list.size()
       << " grasp candidate sets in round " << i << std::endl;
   }
-  if (visualize_steps_)
+  if (param_.visualize_steps_)
   {
     plotter.plotFingers(hand_set_list, cloud_cam.getCloudOriginal(), "Grasp Candidates");
   }
@@ -168,7 +154,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   std::vector<Grasp> valid_grasps;
   valid_grasps = grasp_detector_->classifyGraspCandidates(cloud_cam, hand_set_list);
   std::cout << "Predicted " << valid_grasps.size() << " valid grasps.\n";
-  if (visualize_steps_)
+  if (param_.visualize_steps_)
   {
     plotter.plotFingers(valid_grasps, cloud_cam.getCloudOriginal(), "Valid Grasps");
   }
@@ -178,7 +164,7 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
   std::cout << "Final result: found " << valid_grasps.size() << " clusters.\n";
   std::cout << "Total runtime: " << omp_get_wtime() - t0 << " sec.\n";
   
-  if (visualize_results_ || visualize_steps_)
+  if (param_.visualize_results_ || param_.visualize_steps_)
   {
     plotter.plotFingers(valid_grasps, cloud_cam.getCloudOriginal(), "Clusters");
   }
@@ -201,11 +187,11 @@ std::vector<Grasp> SequentialImportanceSampling::detectGrasps(const CloudCamera&
 void SequentialImportanceSampling::preprocessPointCloud(CloudCamera& cloud_cam)
 {
   std::cout << "Processing cloud with: " << cloud_cam.getCloudOriginal()->size() << " points.\n";
-  cloud_cam.filterWorkspace(workspace_);
+  cloud_cam.filterWorkspace(param_.workspace_);
   std::cout << "After workspace filtering: " << cloud_cam.getCloudProcessed()->size() << " points left.\n";
   cloud_cam.voxelizeCloud(0.003);
   std::cout << "After voxelizing: " << cloud_cam.getCloudProcessed()->size() << " points left.\n";
-  cloud_cam.calculateNormals(num_threads_);
+  cloud_cam.calculateNormals(param_.num_threads_);
 }
 
 

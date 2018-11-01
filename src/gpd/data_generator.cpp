@@ -1,10 +1,13 @@
-#include "../../include/gpd/data_generator.h"
+#include "gpd/data_generator.h"
 
 
-DataGenerator::DataGenerator(ros::NodeHandle& node)
+DataGenerator::DataGenerator(DataGenerationParameters& param)
 {
-  candidates_generator_ = createCandidatesGenerator(node);
-  learning_ = createLearning(node);
+  param_ = param;
+  // Create object to generate grasp candidates.
+  candidates_generator_ = new CandidatesGenerator(param_.generator_params, param_.hand_search_params);
+  // Create object to create grasp images from grasp candidates (used for classification).
+  learning_ = new Learning(param_.image_params, param_.num_threads, param_.num_orientations, false, param_.remove_plane);
 }
 
 
@@ -14,81 +17,9 @@ DataGenerator::~DataGenerator()
   delete learning_;
 }
 
-
-CandidatesGenerator* DataGenerator::createCandidatesGenerator(ros::NodeHandle& node)
+CloudCamera DataGenerator::loadCloudCameraFromFile()
 {
-  // Create objects to store parameters
-  CandidatesGenerator::Parameters generator_params;
-  HandSearch::Parameters hand_search_params;
-
-  // Read hand geometry parameters
-  node.param("finger_width", hand_search_params.finger_width_, 0.01);
-  node.param("hand_outer_diameter", hand_search_params.hand_outer_diameter_, 0.09);
-  node.param("hand_depth", hand_search_params.hand_depth_, 0.06);
-  node.param("hand_height", hand_search_params.hand_height_, 0.02);
-  node.param("init_bite", hand_search_params.init_bite_, 0.015);
-
-  // Read local hand search parameters
-  node.param("nn_radius", hand_search_params.nn_radius_frames_, 0.01);
-  node.param("num_orientations", hand_search_params.num_orientations_, 8);
-  node.param("num_samples", hand_search_params.num_samples_, 500);
-  node.param("num_threads", hand_search_params.num_threads_, 1);
-  node.param("rotation_axis", hand_search_params.rotation_axis_, 2);
-
-  // Read general parameters
-  generator_params.num_samples_ = hand_search_params.num_samples_;
-  generator_params.num_threads_ = hand_search_params.num_threads_;
-  node.param("plot_candidates", generator_params.plot_grasps_, false);
-
-  // Read preprocessing parameters
-  node.param("remove_outliers", generator_params.remove_statistical_outliers_, true);
-  node.param("voxelize", generator_params.voxelize_, true);
-  node.getParam("workspace", generator_params.workspace_);
-
-  // Read plotting parameters.
-  generator_params.plot_grasps_ = false;
-  node.param("plot_normals", generator_params.plot_normals_, false);
-
-  // Create object to generate grasp candidates.
-  return new CandidatesGenerator(generator_params, hand_search_params);
-}
-
-
-Learning* DataGenerator::createLearning(ros::NodeHandle& node)
-{
-  // Read grasp image parameters.
-  Learning::ImageParameters image_params;
-  node.param("image_outer_diameter", image_params.outer_diameter_, 0.09);
-  node.param("image_depth", image_params.depth_, 0.06);
-  node.param("image_height", image_params.height_, 0.02);
-  node.param("image_size", image_params.size_, 60);
-  node.param("image_num_channels", image_params.num_channels_, 15);
-
-  // Read learning parameters.
-  bool remove_plane;
-  int num_orientations, num_threads;
-  node.param("remove_plane_before_image_calculation", remove_plane, false);
-  node.param("num_orientations", num_orientations, 8);
-  node.param("num_threads", num_threads, 1);
-
-  // Create object to create grasp images from grasp candidates (used for classification).
-  return new Learning(image_params, num_threads, num_orientations, false, remove_plane);
-}
-
-
-CloudCamera DataGenerator::loadCloudCameraFromFile(ros::NodeHandle& node)
-{
-  // Set the position from which the camera sees the point cloud.
-  std::vector<double> camera_position;
-  node.getParam("camera_position", camera_position);
-  Eigen::Matrix3Xd view_points(3,1);
-  view_points << camera_position[0], camera_position[1], camera_position[2];
-
-  // Load the point cloud from the file.
-  std::string filename;
-  node.param("cloud_file_name", filename, std::string(""));
-
-  return CloudCamera(filename, view_points);
+  return CloudCamera(param_.filename, param_.view_points);
 }
 
 
@@ -274,37 +205,28 @@ void DataGenerator::storeLMDB(const std::vector<Instance>& dataset, const std::s
 }
 
 
-void DataGenerator::createTrainingData(ros::NodeHandle& node)
+void DataGenerator::createTrainingData()
 {
   int store_step = 1;
   int max_grasps_per_view = 1000;
   Eigen::VectorXi test_views(5);
   test_views << 2, 5, 8, 13, 16;
 
-  std::string data_root, objects_file_location, output_root;
-  node.param("data_root", data_root, std::string(""));
-  node.param("objects_file", objects_file_location, std::string(""));
-  node.param("output_root", output_root, std::string(""));
-  bool plot_grasps;
-  node.param("plot_grasps", plot_grasps, false);
-  int num_views;
-  node.param("num_views", num_views, 20);
-
-  std::vector<std::string> objects = loadObjectNames(objects_file_location);
+  std::vector<std::string> objects = loadObjectNames(param_.objects_file_location);
   std::vector<int> positives_list, negatives_list;
   std::vector<Instance> train_data, test_data;
-  train_data.reserve(store_step * num_views * 100);
-  test_data.reserve(store_step * num_views * 100);
+  train_data.reserve(store_step * param_.num_views * 100);
+  test_data.reserve(store_step * param_.num_views * 100);
 
   for (int i = 0; i < objects.size(); i++)
   {
     printf("===> (%d) Generating images for object: %s\n", i, objects[i].c_str());
 
     // Load mesh for ground truth.
-    std::string prefix = data_root + objects[i];
+    std::string prefix = param_.data_root + objects[i];
     CloudCamera mesh_cloud_cam = loadMesh(prefix + "_gt.pcd", prefix + "_gt_normals.csv");
 
-    for (int j = 0; j < num_views; j++)
+    for (int j = 0; j < param_.num_views; j++)
     {
       printf("===> Processing view %d\n", j + 1);
 
@@ -318,7 +240,7 @@ void DataGenerator::createTrainingData(ros::NodeHandle& node)
       std::vector<cv::Mat> images;
       bool has_grasps = createGraspImages(cloud_cam, grasps, images);
 
-      if (plot_grasps)
+      if (param_.plot_grasps)
       {
         Plot plotter;
         plotter.plotNormals(cloud_cam.getCloudOriginal(), cloud_cam.getNormals());
@@ -375,7 +297,7 @@ void DataGenerator::createTrainingData(ros::NodeHandle& node)
   std::random_shuffle(test_data.begin(), test_data.end());
 
   // Store the grasp images and their labels in LMDBs.
-  storeLMDB(train_data, output_root + "train_lmdb");
-  storeLMDB(test_data, output_root + "test_lmdb");
+  storeLMDB(train_data, param_.output_root + "train_lmdb");
+  storeLMDB(test_data, param_.output_root + "test_lmdb");
   std::cout << "Wrote data to training and test LMDBs\n";
 }
