@@ -434,11 +434,16 @@ std::vector<GraspSet> GraspDetector::filterSideGraspsCloseToTable(const std::vec
     {
       if (is_valid(j))
       {
-        double angle = fabs(vert_axis_vec.transpose() * hands[i].getApproach());
-        double dist = fabs((hands[i].getGraspBottom() - APPROACH_LENGTH*hands[i].getApproach())(2)) - table_height_;
+        //double angle = fabs(vert_axis_vec.transpose() * hands[j].getApproach());
+        //double dist = fabs((hands[j].getGraspBottom() - APPROACH_LENGTH*hands[j].getApproach())(2)) - table_height_;
+
+        double half_width = 0.5 * outer_diameter_;
+        Eigen::Vector3d left_top = hands[j].getGraspTop() + half_width * hands[j].getBinormal();
+        Eigen::Vector3d right_top = hands[j].getGraspTop() - half_width * hands[j].getBinormal();
 
         // This is a side grasps that is too close to the table.
-        if (angle > angle_thresh_ && dist < table_thresh_)
+        //if (angle > angle_thresh_ && dist < table_thresh_)
+        if (left_top.z() < table_height_ || right_top.z() < table_height_)
         {
           is_valid(j) = false;
         }
