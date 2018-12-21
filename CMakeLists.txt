@@ -5,7 +5,7 @@ project(gpd)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation roscpp
-  sensor_msgs std_msgs)
+  sensor_msgs std_msgs visualization_msgs pcl_conversions)
 
 # PCL
 find_package(PCL REQUIRED)
@@ -124,6 +124,12 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 #   cfg/DynReconf2.cfg
 # )
 
+SET(GPD_LIB_FILES classifier clustering grasp_detector learning sequential_importance_sampling
+    grasp_image grasp_image_15_channels)
+foreach(gpd_lib_files ${GPD_LIB_FILES})
+    LIST(APPEND GPD_LIB ${PROJECT_NAME}_${gpd_lib_files})
+endforeach()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -135,7 +141,8 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 INCLUDE_DIRS include
-CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
+LIBRARIES ${GPD_LIB}
+CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs visualization_msgs pcl_conversions
 DEPENDS Eigen OpenCV PCL
 )
 
@@ -152,12 +159,17 @@ add_library(${PROJECT_NAME}_classifier ${classifier_src})
 add_library(${PROJECT_NAME}_clustering src/${PROJECT_NAME}/clustering.cpp)
 if(USE_CAFFE STREQUAL "ON")
   add_library(${PROJECT_NAME}_data_generator src/${PROJECT_NAME}/data_generator.cpp)
+  LIST(APPEND GPD_LIB ${PROJECT_NAME}_data_generator)
 endif()
 add_library(${PROJECT_NAME}_grasp_detector src/${PROJECT_NAME}/grasp_detector.cpp)
 add_library(${PROJECT_NAME}_learning src/${PROJECT_NAME}/learning.cpp)
 add_library(${PROJECT_NAME}_sequential_importance_sampling src/${PROJECT_NAME}/sequential_importance_sampling.cpp)
 add_library(${PROJECT_NAME}_grasp_image src/${PROJECT_NAME}/grasp_image.cpp)
 add_library(${PROJECT_NAME}_grasp_image_15_channels src/${PROJECT_NAME}/grasp_image_15_channels.cpp)
+
+foreach(gpd_lib ${GPD_LIB})
+    add_dependencies(${gpd_lib} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endforeach()
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -277,10 +289,44 @@ if(USE_CAFFE STREQUAL "ON")
   set_target_properties(${PROJECT_NAME}_create_training_data
                       PROPERTIES OUTPUT_NAME create_training_data
                       PREFIX "")
+  LIST(APPEND TARGET_FILES create_training_data)
 endif()
 
 if(USE_CAFFE STREQUAL "ON")
   set_target_properties(${PROJECT_NAME}_test_occlusion
                         PROPERTIES OUTPUT_NAME test_occlusion
                         PREFIX "")
+  LIST(APPEND TARGET_FILES test_occlusion)
 endif()
+
+SET(TARGET_FILES detect_grasps classify_candidates create_grasp_images)
+
+foreach(target_file ${TARGET_FILES})
+    install(TARGETS ${PROJECT_NAME}_${target_file}
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    )
+endforeach()
+
+foreach(gpd_lib ${GPD_LIB})
+    install(TARGETS ${gpd_lib}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    )
+endforeach()
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY include/nodes/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY launch lenet rviz tutorials
+DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+PATTERN ".svn" EXCLUDE)
