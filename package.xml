@@ -31,22 +31,30 @@
   <!-- Use build_depend for packages you need at compile time: -->
   <build_depend>cmake_modules</build_depend> 
   <build_depend>eigen_conversions</build_depend> 
+  <build_depend>pcl_conversions</build_depend>
   <build_depend>geometry_msgs</build_depend> 
   <build_depend>libpcl-all-dev</build_depend>
   <build_depend>message_generation</build_depend> 
   <build_depend>roscpp</build_depend>
   <build_depend>sensor_msgs</build_depend> 
   <build_depend>std_msgs</build_depend> 
+  <build_depend>visualization_msgs</build_depend>
+  <build_depend>gpg</build_depend>
+  <build_depend>opencv3</build_depend>
   
   <!-- Use run_depend for packages you need at runtime: -->
   <run_depend>cmake_modules</run_depend>
   <run_depend>eigen_conversions</run_depend>
+  <run_depend>pcl_conversions</run_depend>
   <run_depend>geometry_msgs</run_depend>
   <run_depend>libpcl-all</run_depend>
   <run_depend>message_runtime</run_depend>
   <run_depend>roscpp</run_depend>
   <run_depend>sensor_msgs</run_depend>
   <run_depend>std_msgs</run_depend>
+  <run_depend>visualization_msgs</run_depend>
+  <run_depend>gpg</run_depend>
+  <run_depend>opencv3</run_depend>
   
   <!-- Use test_depend for packages you need only for testing: -->
   <!--   <test_depend>gtest</test_depend> -->

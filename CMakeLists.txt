@@ -5,7 +5,7 @@ project(gpd)
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
 find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation roscpp
-  sensor_msgs std_msgs)
+  sensor_msgs std_msgs visualization_msgs pcl_conversions)
 
 # PCL
 find_package(PCL REQUIRED)
@@ -94,6 +94,12 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 #   cfg/DynReconf2.cfg
 # )
 
+SET(GPD_LIB_FILES clustering grasp_detector grasp_plotter learning sequential_importance_sampling
+    grasp_image grasp_image_15_channels dense_layer conv_layer lenet)
+foreach(gpd_lib_files ${GPD_LIB_FILES})
+    LIST(APPEND GPD_LIB ${PROJECT_NAME}_${gpd_lib_files})
+endforeach()
+
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -105,7 +111,8 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 INCLUDE_DIRS include
-CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
+LIBRARIES ${GPD_LIB}
+CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs visualization_msgs pcl_conversions
 DEPENDS Eigen OpenCV PCL
 )
 
@@ -129,6 +136,10 @@ add_library(${PROJECT_NAME}_dense_layer src/${PROJECT_NAME}/dense_layer.cpp)
 add_library(${PROJECT_NAME}_conv_layer src/${PROJECT_NAME}/conv_layer.cpp)
 add_library(${PROJECT_NAME}_lenet src/${PROJECT_NAME}/lenet.cpp)
 
+foreach(gpd_lib ${GPD_LIB})
+    add_dependencies(${gpd_lib} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+endforeach()
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
@@ -146,6 +157,7 @@ add_executable(${PROJECT_NAME}_test_conv_layer src/tests/test_conv_layer.cpp)
 add_executable(${PROJECT_NAME}_test_lenet src/tests/test_lenet.cpp)
 add_executable(${PROJECT_NAME}_test_service src/tests/test_service.cpp)
 
+add_dependencies(${PROJECT_NAME}_test_service src/tests/test_service.cpp ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable
 ## same as for the library above
@@ -278,3 +290,36 @@ set_target_properties(${PROJECT_NAME}_test_lenet
 set_target_properties(${PROJECT_NAME}_test_service
                       PROPERTIES OUTPUT_NAME test_service
                       PREFIX "")
+
+SET(TARGET_FILES detect_grasps detect_grasps_server classify_candidates create_grasp_images
+    test_occlusion test_grasp_image test_conv_layer test_lenet test_service)
+
+foreach(target_file ${TARGET_FILES})
+    install(TARGETS ${PROJECT_NAME}_${target_file}
+    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+    )
+endforeach()
+
+foreach(gpd_lib ${GPD_LIB})
+    install(TARGETS ${gpd_lib}
+    LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+    )
+endforeach()
+
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY include/nodes/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+  FILES_MATCHING PATTERN "*.h"
+  PATTERN ".svn" EXCLUDE
+)
+
+install(DIRECTORY launch lenet rviz tutorials
+DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+PATTERN ".svn" EXCLUDE)
