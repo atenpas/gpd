@@ -131,9 +131,9 @@ void GraspImage15Channels::showImage(const std::vector<Projection>& projections)
   {
     // OpenCV requires images to be in BGR or grayscale to be displayed.
     cv::Mat normals_rgb, depth_rgb, shadow_rgb;
-    cvtColor(projections[i].normals_image_, normals_rgb, CV_RGB2BGR);
-    cvtColor(projections[i].depth_image_, depth_rgb, CV_GRAY2RGB);
-    cvtColor(projections[i].shadow_image_, shadow_rgb, CV_GRAY2RGB);
+    cvtColor(projections[i].normals_image_, normals_rgb, cv::COLOR_RGB2BGR);
+    cvtColor(projections[i].depth_image_, depth_rgb, cv::COLOR_GRAY2RGB);
+    cvtColor(projections[i].shadow_image_, shadow_rgb, cv::COLOR_GRAY2RGB);
     normals_rgb.copyTo(image_out(cv::Rect(border, border + i * (border + image_size_), image_size_, image_size_)));
     depth_rgb.copyTo(image_out(cv::Rect(2 * border + image_size_, border + i * (border + image_size_), image_size_, image_size_)));
     shadow_rgb.copyTo(image_out(cv::Rect(3 * border + 2 * image_size_, border + i * (border + image_size_), image_size_, image_size_)));
