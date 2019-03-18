@@ -57,8 +57,9 @@ OpenVINOClassifier::OpenVINOClassifier(Classifier::Device device)
     network_reader.ReadWeights(std::string(MODELS_DIR) + "/fp16/single_view_15_channels.bin");
     break;
   case Classifier::Device::eGPU:
-    std::cout << "GPU device to be supported!!\n";
-    // fall through;
+    network_reader.ReadNetwork(std::string(MODELS_DIR) + "/fp16/single_view_15_channels.xml");
+    network_reader.ReadWeights(std::string(MODELS_DIR) + "/fp16/single_view_15_channels.bin");
+    break;
   case Classifier::Device::eFPGA:
     std::cout << "FPGA device to be supported!!\n";
     // fall through;
