@@ -2,6 +2,8 @@
 
   <arg name="device"                     default="0"
         doc="target device to execute inference. [0:CPU]|1:GPU|2:VPU|3:FPGA" />
+  <arg name="plane_remove"               default="false"
+        doc="if remove plane from PCL inputs" />
 
   <!-- Load hand geometry parameters -->  
   <include file="$(find gpd)/launch/hand_geometry.launch">
@@ -16,6 +18,7 @@
 	<node name="detect_grasps" pkg="gpd" type="detect_grasps" output="screen">
 
     <param name="device" type="int" value="$(arg device)" />
+    <param name="plane_remove" type="bool" value="$(arg plane_remove)" />
 
     <!-- If sequential importance sampling is used (default: false) -->
     <param name="use_importance_sampling" value="false" />

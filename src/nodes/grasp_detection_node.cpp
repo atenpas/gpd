@@ -1,12 +1,16 @@
+#include <pcl/ModelCoefficients.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
 #include "nodes/grasp_detection_node.h"
 #include "nodes/ros_params.h"
-
 
 /** constants for input point cloud types */
 const int GraspDetectionNode::POINT_CLOUD_2 = 0; ///< sensor_msgs/PointCloud2
 const int GraspDetectionNode::CLOUD_INDEXED = 1; ///< cloud with indices
 const int GraspDetectionNode::CLOUD_SAMPLES = 2; ///< cloud with (x,y,z) samples
-
 
 GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false), has_normals_(false),
   size_left_cloud_(0), has_samples_(true), frame_("")
@@ -42,6 +46,7 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
   nh_.param("samples_topic", samples_topic, std::string(""));
   std::string rviz_topic;
   nh_.param("rviz_topic", rviz_topic, std::string(""));
+  nh_.param("plane_remove", plane_remove_, false);
 
   if (!rviz_topic.empty())
   {
@@ -74,7 +79,9 @@ GraspDetectionNode::GraspDetectionNode(ros::NodeHandle& node) : has_cloud_(false
 
   // uses ROS topics to publish grasp candidates, antipodal grasps, and grasps after clustering
   grasps_pub_ = nh_.advertise<gpd::GraspConfigList>("clustered_grasps", 10);
-
+  if (plane_remove_) {
+    tabletop_pub_ = nh_.advertise<sensor_msgs::PointCloud2>("tabletop_points", 10);
+  }
   // Advertise the SetParameters service
   srv_set_params_ = nh_.advertiseService("/gpd/set_params", &GraspDetectionNode::set_params_callback, this);
 
@@ -241,6 +248,30 @@ void GraspDetectionNode::cloud_callback(const sensor_msgs::PointCloud2& msg)
     {
       PointCloudRGBA::Ptr cloud(new PointCloudRGBA);
       pcl::fromROSMsg(msg, *cloud);
+      if (plane_remove_) {
+        pcl::ModelCoefficients::Ptr coefficients (new pcl::ModelCoefficients);
+        pcl::PointIndices::Ptr inliers (new pcl::PointIndices);
+        // Create the segmentation object
+        pcl::SACSegmentation<pcl::PointXYZRGBA> seg;
+        // Optional
+        seg.setOptimizeCoefficients (true);
+        // Mandatory
+        seg.setModelType (pcl::SACMODEL_PLANE);
+        seg.setMethodType (pcl::SAC_RANSAC);
+        seg.setDistanceThreshold (0.015);
+        seg.setInputCloud (cloud);
+        seg.segment (*inliers, *coefficients);
+
+        for (size_t i = 0; i < inliers->indices.size (); ++i)
+        {
+          cloud->points[inliers->indices[i]].x = std::numeric_limits<float>::quiet_NaN();
+          cloud->points[inliers->indices[i]].y = std::numeric_limits<float>::quiet_NaN();
+          cloud->points[inliers->indices[i]].z = std::numeric_limits<float>::quiet_NaN();
+        }
+        sensor_msgs::PointCloud2 msg;
+        pcl::toROSMsg(*cloud, msg);
+        tabletop_pub_.publish(msg);
+      }
       cloud_camera_ = new CloudCamera(cloud, 0, view_points);
       cloud_camera_header_ = msg.header;
       ROS_INFO_STREAM("Received cloud with " << cloud_camera_->getCloudProcessed()->size() << " points.");

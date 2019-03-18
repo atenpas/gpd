@@ -195,6 +195,7 @@ private:
   ros::Subscriber samples_sub_; ///< ROS subscriber for samples messages
   ros::Publisher grasps_pub_; ///< ROS publisher for grasp list messages
   ros::Publisher grasps_rviz_pub_; ///< ROS publisher for grasps in rviz (visualization)
+  ros::Publisher tabletop_pub_; ///< ROS publisher for tabletop point clouds
   ros::ServiceServer srv_set_params_; ///< ROS service server for setting params
 
   bool use_importance_sampling_; ///< if importance sampling is used
@@ -205,6 +206,7 @@ private:
   bool plot_normals_; ///< if normals are plotted
   bool plot_samples_; ///< if samples/indices are plotted
   bool use_rviz_; ///< if rviz is used for visualization instead of PCL
+  bool plane_remove_; ///< if remove plane from PCL inputs
   std::vector<double> workspace_; ///< workspace limits
 
   GraspDetector* grasp_detector_; ///< used to run the grasp pose detection
