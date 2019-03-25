@@ -7,6 +7,9 @@ project(gpd)
 find_package(catkin REQUIRED COMPONENTS cmake_modules eigen_conversions geometry_msgs message_generation roscpp
   sensor_msgs std_msgs)
 
+# Eigen3
+find_package(Eigen3)
+
 # PCL
 find_package(PCL REQUIRED)
 include_directories(${PCL_INCLUDE_DIRS})
@@ -136,7 +139,7 @@ generate_messages(DEPENDENCIES geometry_msgs sensor_msgs std_msgs)
 catkin_package(
 INCLUDE_DIRS include
 CATKIN_DEPENDS cmake_modules eigen_conversions geometry_msgs message_runtime roscpp sensor_msgs std_msgs
-DEPENDS Eigen OpenCV PCL
+DEPENDS EIGEN3 OpenCV PCL
 )
 
 ###########
