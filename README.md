@@ -5,6 +5,7 @@
 * **Author's website:** [http://www.ccs.neu.edu/home/atp/](http://www.ccs.neu.edu/home/atp/)
 * **License:** BSD
 * **Branch without Caffe dependency**: [forward](https://github.com/atenpas/gpd/tree/forward)
+* **Repository for C++11:** [gpd2](https://github.com/atenpas/gpd2)
 
 
 ## 1) Overview
@@ -18,7 +19,6 @@ as viable grasps or not, and clustering viable grasps which are geometrically si
 
 The reference for this package is: [High precision grasp pose detection in dense clutter](http://arxiv.org/abs/1603.01564).
 
-**Update:** A version of this package that does not require Caffe can be found [here](https://github.com/atenpas/gpd/tree/forward).</span style>
 
 ### UR5 Video
 
