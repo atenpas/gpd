@@ -2,7 +2,7 @@
 
 * [Author's website](http://www.ccs.neu.edu/home/atp/)
 * [License](https://github.com/atenpas/gpd2/blob/master/LICENSE.md)
-* [ROS wrapper](https://github.com/atenpas/gpd2_ros/)
+* [ROS wrapper](https://github.com/atenpas/gpd_ros/)
 
 Grasp Pose Detection (GPD) is a package to detect 6-DOF grasp poses (3-DOF
 position and 3-DOF orientation) for a 2-finger robot hand (e.g., a parallel
