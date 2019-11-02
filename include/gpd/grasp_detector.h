@@ -1,7 +1,7 @@
 /*
  * Software License Agreement (BSD License)
  *
- *  Copyright (c) 2016, Andreas ten Pas
+ *  Copyright (c) 2018, Andreas ten Pas
  *  All rights reserved.
  *
  *  Redistribution and use in source and binary forms, with or without
@@ -32,9 +32,9 @@
 #ifndef GRASP_DETECTOR_H_
 #define GRASP_DETECTOR_H_
 
-
 // System
 #include <algorithm>
+#include <memory>
 #include <vector>
 
 // PCL
@@ -44,167 +44,187 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 
-// ROS
-#include <ros/ros.h>
+#include <gpd/candidate/candidates_generator.h>
+#include <gpd/candidate/hand_geometry.h>
+#include <gpd/candidate/hand_set.h>
+#include <gpd/clustering.h>
+#include <gpd/descriptor/image_generator.h>
+#include <gpd/net/classifier.h>
+#include <gpd/util/config_file.h>
+#include <gpd/util/plot.h>
 
-// Grasp Candidates Generator
-#include <gpg/cloud_camera.h>
-#include <gpg/candidates_generator.h>
-#include <gpg/grasp.h>
-#include <gpg/grasp_set.h>
-#include <gpg/plot.h>
+namespace gpd {
 
-// Custom
-#include "gpd/classifier.h"
-#include "../gpd/clustering.h"
-#include "../gpd/learning.h"
-
-
-/** GraspDetector class
+/**
  *
  * \brief Detect grasp poses in point clouds.
  *
- * This class detects grasps in a point cloud by first creating a large set of grasp hypotheses, and then
- * classifying each of them as a grasp or not. It also contains a function to preprocess the point cloud.
+ * This class detects grasp poses in a point clouds by first creating a large
+ * set of grasp candidates, and then classifying each of them as a grasp or not.
  *
-*/
-class GraspDetector
-{
-public:
-
+ */
+class GraspDetector {
+ public:
   /**
    * \brief Constructor.
    * \param node ROS node handle
    */
-  GraspDetector(ros::NodeHandle& node);
+  GraspDetector(const std::string &config_filename);
 
   /**
-   * \brief Destructor.
+   * \brief Detect grasps in a point cloud.
+   * \param cloud_cam the point cloud
+   * \return list of grasps
    */
-  ~GraspDetector()
-  {
-    delete candidates_generator_;
-    delete learning_;
-    delete clustering_;
-  }
-  
+  std::vector<std::unique_ptr<candidate::Hand>> detectGrasps(
+      const util::Cloud &cloud);
+
   /**
    * \brief Preprocess the point cloud.
    * \param cloud_cam the point cloud
    */
-  void preprocessPointCloud(CloudCamera& cloud_cam);
+  void preprocessPointCloud(util::Cloud &cloud);
 
   /**
-   * \brief Detect grasps in a given point cloud.
-   * \param cloud_cam the point cloud
-   * \return the list of detected grasps
+   * Filter grasps based on the robot's workspace.
+   * \param hand_set_list list of grasp candidate sets
+   * \param workspace the robot's workspace as a 3D cube, centered at the origin
+   * \param thresh_rad the angle in radians above which grasps are filtered
+   * \return list of grasps after filtering
    */
-  std::vector<Grasp> detectGrasps(const CloudCamera& cloud_cam);
+  std::vector<std::unique_ptr<candidate::HandSet>> filterGraspsWorkspace(
+      std::vector<std::unique_ptr<candidate::HandSet>> &hand_set_list,
+      const std::vector<double> &workspace) const;
+
+  /**
+   * Filter grasps based on their approach direction.
+   * \param hand_set_list list of grasp candidate sets
+   * \param direction the direction used for filtering
+   * \param thresh_rad the angle in radians above which grasps are filtered
+   * \return list of grasps after filtering
+   */
+  std::vector<std::unique_ptr<candidate::HandSet>> filterGraspsDirection(
+      std::vector<std::unique_ptr<candidate::HandSet>> &hand_set_list,
+      const Eigen::Vector3d &direction, const double thresh_rad);
 
   /**
    * \brief Generate grasp candidates.
-   * \param cloud_cam the point cloud
+   * \param cloud the point cloud
    * \return the list of grasp candidates
    */
-  std::vector<GraspSet> generateGraspCandidates(const CloudCamera& cloud_cam);
+  std::vector<std::unique_ptr<candidate::HandSet>> generateGraspCandidates(
+      const util::Cloud &cloud);
 
   /**
-   * \brief Filter grasps that are outside of the robot's workspace.
-   * \param hand_set_list the list of grasp candidate sets
-   * \param workspace the robot's workspace
-   * \return the grasps that are inside the robot's workspace
+   * \brief Create grasp images and candidates for a given point cloud.
+   * \param cloud the point cloud
+   * \param[out] hands_out the grasp candidates
+   * \param[out] images_out the grasp images
+   * \return `false` if no grasp candidates are found, `true` otherwise
    */
-  std::vector<GraspSet> filterGraspsWorkspace(const std::vector<GraspSet>& hand_set_list,
-    const std::vector<double>& workspace);
-  
-  /**
-   * \brief Filter grasps that are half-antipodal.
-   * \param hand_set_list the list of grasp candidate sets
-   * \return the grasps that are not half-antipodal
-   */
-  std::vector<GraspSet> filterHalfAntipodal(const std::vector<GraspSet>& hand_set_list);
+  bool createGraspImages(
+      util::Cloud &cloud,
+      std::vector<std::unique_ptr<candidate::Hand>> &hands_out,
+      std::vector<std::unique_ptr<cv::Mat>> &images_out);
 
   /**
-   * \brief Extract the valid grasps from a given list of grasp candidate sets.
-   * \param hand_set_list the list of grasp candidate sets
-   * \return the valid grasps
+   * \brief Evaluate the ground truth for a given list of grasps.
+   * \param cloud_gt the point cloud (typically a mesh)
+   * \param hands the grasps
+   * \return the ground truth label for each grasp
    */
-  std::vector<Grasp> extractHypotheses(const std::vector<GraspSet>& hand_set_list);
+  std::vector<int> evalGroundTruth(
+      const util::Cloud &cloud_gt,
+      std::vector<std::unique_ptr<candidate::Hand>> &hands);
 
   /**
-   * \brief Match grasps with their corresponding grasp images.
-   * \param[in] hand_set_list list of grasp candidate sets
-   * \param[in] images list of grasp images
-   * \param[out] grasps_out the grasps corresponding to the images
-   * \param[out] images_out the images corresponding to the grasps
+   * \brief Creates grasp images and prunes grasps below a given score.
+   * \param cloud the point cloud
+   * \param hand_set_list the grasps
+   * \param min_score the score below which grasps are pruned
+   * \return the grasps above the score
    */
-  void extractGraspsAndImages(const std::vector<GraspSet>& hand_set_list, const std::vector<cv::Mat>& images,
-    std::vector<Grasp>& grasps_out, std::vector<cv::Mat>& images_out);
+  std::vector<std::unique_ptr<candidate::Hand>> pruneGraspCandidates(
+      const util::Cloud &cloud,
+      const std::vector<std::unique_ptr<candidate::HandSet>> &hand_set_list,
+      double min_score);
 
   /**
-   * \brief Classify grasp candidates as viable grasps or not.
-   * \param cloud_cam the point cloud
-   * \param candidates the grasp candidates to be classified
-   * \return the classified grasps
+   * \brief Select the k highest scoring grasps.
+   * \param hands the grasps
+   * \return the k highest scoring grasps
    */
-  std::vector<Grasp> classifyGraspCandidates(const CloudCamera& cloud_cam, std::vector<GraspSet>& candidates);
+  std::vector<std::unique_ptr<candidate::Hand>> selectGrasps(
+      std::vector<std::unique_ptr<candidate::Hand>> &hands) const;
 
   /**
-   * \brief Find clusters of grasps that are geometrically aligned.
-   * \param grasps the grasps for which to search clusters
-   * \return the grasps that are in clusters
+   * \brief Compare the scores of two given grasps.
+   * \param hand1 the first grasp to be compared
+   * \param hand1 the second grasp to be compared
+   * \return `true` if \param hand1 has a larger score than \param hand2,
+   * `false` otherwise
    */
-  std::vector<Grasp> findClusters(const std::vector<Grasp>& grasps);
-
-  /**
-   * \brief Compare if the score of a grasp is larger than the score of another grasp.
-   * \param hypothesis1 a grasp
-   * \param hypothesis2 another grasp
-   * \return true if it is larger, false otherwise
-   */
-  static bool isScoreGreater(const Grasp& hypothesis1, const Grasp& hypothesis2)
-  {
-    return hypothesis1.getScore() > hypothesis2.getScore();
+  static bool isScoreGreater(const std::unique_ptr<candidate::Hand> &hand1,
+                             const std::unique_ptr<candidate::Hand> &hand2) {
+    return hand1->getScore() > hand2->getScore();
   }
 
-  const HandSearch::Parameters& getHandSearchParameters()
-  {
+  /**
+   * \brief Return the hand search parameters.
+   * \return the hand search parameters
+   */
+  const candidate::HandSearch::Parameters &getHandSearchParameters() {
     return candidates_generator_->getHandSearchParams();
   }
 
+  /**
+   * \brief Return the image geometry parameters.
+   * \return the image geometry parameters
+   */
+  const descriptor::ImageGeometry &getImageGeometry() const {
+    return image_generator_->getImageGeometry();
+  }
 
-private:
+ private:
+  void printStdVector(const std::vector<int> &v, const std::string &name) const;
 
-  CandidatesGenerator* candidates_generator_; ///< pointer to object for grasp candidate generation
-  Learning* learning_; ///< pointer to object for grasp image creation
-  Clustering* clustering_; ///< pointer to object for clustering geometrically aligned grasps
-  std::shared_ptr<Classifier> classifier_; ///< pointer to object for classification of candidates
+  void printStdVector(const std::vector<double> &v,
+                      const std::string &name) const;
 
-  Learning::ImageParameters image_params_; // grasp image parameters
+  std::unique_ptr<candidate::CandidatesGenerator> candidates_generator_;
+  std::unique_ptr<descriptor::ImageGenerator> image_generator_;
+  std::unique_ptr<Clustering> clustering_;
+  std::unique_ptr<util::Plot> plotter_;
+  std::shared_ptr<net::Classifier> classifier_;
 
   // classification parameters
-  double min_score_diff_; ///< minimum classifier confidence score
-  bool create_image_batches_; ///< if images are created in batches (reduces memory usage)
+  double min_score_;           ///< minimum classifier confidence score
+  bool create_image_batches_;  ///< if images are created in batches (reduces
+                               /// memory usage)
 
   // plotting parameters
-  bool plot_normals_; ///< if normals are plotted
-  bool plot_samples_; ///< if samples/indices are plotted
-  bool plot_filtered_grasps_; ///< if filtered grasps are plotted
-  bool plot_valid_grasps_; ///< if positive grasp instances are plotted
-  bool plot_clusters_; ///< if grasp clusters are plotted
-  bool plot_selected_grasps_; ///< if selected grasps are plotted
+  bool plot_normals_;              ///< if normals are plotted
+  bool plot_samples_;              ///< if samples/indices are plotted
+  bool plot_candidates_;           ///< if grasp candidates are plotted
+  bool plot_filtered_candidates_;  ///< if filtered grasp candidates are plotted
+  bool plot_valid_grasps_;         ///< if valid grasps are plotted
+  bool plot_clustered_grasps_;     ///< if clustered grasps are plotted
+  bool plot_selected_grasps_;      ///< if selected grasps are plotted
 
   // filtering parameters
-  bool filter_grasps_; ///< if grasps are filtered based on the robot's workspace and the robot hand width
-  bool filter_half_antipodal_; ///< if grasps are filtered based on being half-antipodal
-  bool cluster_grasps_; ///< if grasps are clustered
-  double outer_diameter_; ///< the outer diameter of the robot hand
-  double min_aperture_; ///< the minimum opening width of the robot hand
-  double max_aperture_; ///< the maximum opening width of the robot hand
-  std::vector<double> workspace_; ///< the workspace of the robot
+  bool cluster_grasps_;  ///< if grasps are clustered
+  double min_aperture_;  ///< the minimum opening width of the robot hand
+  double max_aperture_;  ///< the maximum opening width of the robot hand
+  std::vector<double> workspace_grasps_;  ///< the workspace of the robot with
+                                          /// respect to hand poses
+  bool filter_approach_direction_;
+  Eigen::Vector3d direction_;
+  double thresh_rad_;
 
   // selection parameters
-  int num_selected_; ///< the number of selected grasps
+  int num_selected_;  ///< the number of selected grasps
 };
+
+}  // namespace gpd
 
 #endif /* GRASP_DETECTOR_H_ */

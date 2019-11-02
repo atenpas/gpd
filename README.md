@@ -1,172 +1,264 @@
 # Grasp Pose Detection (GPD)
 
-* **Author:** Andreas ten Pas (atp@ccs.neu.edu)
-* **Version:** 1.0.0
-* **Author's website:** [http://www.ccs.neu.edu/home/atp/](http://www.ccs.neu.edu/home/atp/)
-* **License:** BSD
-* **Branch without Caffe dependency**: [forward](https://github.com/atenpas/gpd/tree/forward)
-* **Repository for C++11:** [gpd2](https://github.com/atenpas/gpd2)
+* [Author's website](http://www.ccs.neu.edu/home/atp/)
+* [License](https://github.com/atenpas/gpd2/blob/master/LICENSE.md)
+* [ROS wrapper](https://github.com/atenpas/gpd2_ros/)
 
+Grasp Pose Detection (GPD) is a package to detect 6-DOF grasp poses (3-DOF
+position and 3-DOF orientation) for a 2-finger robot hand (e.g., a parallel
+jaw gripper) in 3D point clouds. GPD takes a point cloud as input and produces
+pose estimates of viable grasps as output. The main strengths of GPD are:
+- works for novel objects (no CAD models required for detection),
+- works in dense clutter, and
+- outputs 6-DOF grasp poses (enabling more than just top-down grasps).
 
-## 1) Overview
-
-This package detects 6-DOF grasp poses for a 2-finger grasp (e.g. a parallel jaw gripper) in 3D point clouds.
-
-<!-- <img src="readme/examples.png" alt="" style="width: 400px;"/> -->
-
-Grasp pose detection consists of three steps: sampling a large number of grasp candidates, classifying these candidates 
-as viable grasps or not, and clustering viable grasps which are geometrically similar.
-
-The reference for this package is: [High precision grasp pose detection in dense clutter](http://arxiv.org/abs/1603.01564).
-
-
-### UR5 Video
 
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=kfe5bNt35ZI
-" target="_blank"><img src="http://img.youtube.com/vi/y7z-Yn1PQNI/0.jpg" 
-alt="UR5 demo" width="640" height="480" border="0" /></a>
+" target="_blank"><img src="readme/ur5_video.jpg"
+alt="UR5 demo" width="320" height="240" border="0" /></a>
 
+GPD consists of two main steps: sampling a large number of grasp candidates, and classifying these candidates as viable grasps or not.
 
-## 2) Requirements
+##### Example Input and Output
+<img src="readme/clutter.png" height=170px/>
 
-1. [PCL 1.7 or later](http://pointclouds.org/)
-2. [Eigen 3.0 or later](https://eigen.tuxfamily.org)
-3. [Caffe](http://caffe.berkeleyvision.org/)
-4. <a href="http://wiki.ros.org/indigo" style="color:blue">ROS Indigo</a> <span style="color:blue">and Ubuntu 
-14.04</span> *or* <a href="http://wiki.ros.org/kinetic" style="color:orange">ROS Kinetic</a> 
-<span style="color:orange">and Ubuntu 16.04</span>
+The reference for this package is:
+[Grasp Pose Detection in Point Clouds](http://arxiv.org/abs/1706.09911).
 
+## Table of Contents
+1. [Requirements](#requirements)
+1. [Installation](#install)
+1. [Generate Grasps for a Point Cloud File](#pcd)
+1. [Parameters](#parameters)
+1. [Views](#views)
+1. [Input Channels for Neural Network](#cnn_channels)
+1. [CNN Frameworks](#cnn_frameworks)
+1. [GPU Support With PCL](#pcl_gpu)
+1. [Network Training](#net_train)
+1. [Grasp Image](#descriptor)
+1. [References](#References)
 
-## 3) Prerequisites
+<a name="requirements"></a>
+## 1) Requirements
 
-The following instructions work for **Ubuntu 14.04** or **Ubuntu 16.04**. Similar instructions should work for other 
-Linux distributions that support ROS.
+1. [PCL 1.9 or newer](http://pointclouds.org/)
+2. [Eigen 3.0 or newer](https://eigen.tuxfamily.org)
+3. [OpenCV 3.4 or newer](https://opencv.org)
 
- 1. Install Caffe [(Instructions)](http://caffe.berkeleyvision.org/installation.html). Follow the 
-[CMake Build instructions](http://caffe.berkeleyvision.org/installation.html#cmake-build). **Notice for Ubuntu 14.04:** 
-Due to a conflict between the Boost version required by Caffe (1.55) and the one installed as a dependency with the 
-Debian package for ROS Indigo (1.54), you need to checkout an older version of Caffe that worked with Boost 1.54. So, 
-when you clone Caffe, please use this command.
-   
-    ```
-    git clone https://github.com/BVLC/caffe.git && cd caffe
-    git checkout 923e7e8b6337f610115ae28859408bc392d13136
-    ```
+<a name="install"></a>
+## 2) Installation
 
-2. Install ROS. In Ubuntu 14.04, install ROS Indigo [(Instructions)](http://wiki.ros.org/indigo/Installation/Ubuntu). 
-In Ubuntu 16.04, install ROS Kinetic [(Instructions)](http://wiki.ros.org/kinetic/Installation/Ubuntu).
+The following instructions have been tested on **Ubuntu 16.04**. Similar
+instructions should work for other Linux distributions.
 
+1. Install [PCL](http://pointclouds.org/) and
+[Eigen](https://eigen.tuxfamily.org). If you have ROS Indigo or Kinetic
+installed, you should be good to go.
 
-3. Clone the [grasp_pose_generator](https://github.com/atenpas/gpg) repository into some folder:
+2. Install OpenCV 3.4 ([tutorial](https://www.python36.com/how-to-install-opencv340-on-ubuntu1604/)).
+
+3. Clone the repository into some folder:
 
    ```
-   cd <location_of_your_workspace>
-   git clone https://github.com/atenpas/gpg.git
+   git clone https://github.com/atenpas/gpd2
    ```
 
-4. Build and install the *grasp_pose_generator*: 
+4. Build the package:
 
    ```
-   cd gpg
+   cd gpd2
    mkdir build && cd build
    cmake ..
-   make
-   sudo make install
+   make -j
    ```
 
+You can optionally install GPD with `sudo make install` so that it can be used by other projects as a shared library.
 
-## 4) Compiling GPD
+<a name="pcd"></a>
+## 3) Generate Grasps for a Point Cloud File
 
-1. Clone this repository.
-   
-   ```
-   cd <location_of_your_workspace/src>
-   git clone https://github.com/atenpas/gpd.git
-   ```
-
-2. Build your catkin workspace.
+Run GPD on an point cloud file (PCD or PLY):
 
    ```
-   cd <location_of_your_workspace>
-   catkin_make
+   ./detect_grasps ../cfg/eigen_params.cfg ../tutorials/krylon.pcd
    ```
 
+The output should look similar to the screenshot shown below. The window is the PCL viewer. You can press [q] to close the window and [h] to see a list of other commands.
 
-## 5) Generate Grasps for a Point Cloud File
+<img src="readme/file.png" alt="" width="30%" border="0" />
 
-Launch the grasp pose detection on an example point cloud:
-   
-   ```
-   roslaunch gpd tutorial0.launch
-   ```
-Within the GUI that appears, press r to center the view, and q to quit the GUI and load the next visualization.
-The output should look similar to the screenshot shown below.
+Below is a visualization of the convention that GPD uses for the grasp pose (position and orientation) of a grasp. The grasp position is indicated by the orange cross and the orientation by the colored arrows.
 
-![rviz screenshot](readme/file.png "Grasps visualized in PCL")
+<img src="readme/hand_frame.png" alt="" width="30%" border="0" />
 
+<a name="parameters"></a>
+## 4) Parameters
 
-## 6) Tutorials
+Brief explanations of parameters are given in *cfg/eigen_params.cfg*.
 
-1. [Detect Grasps With an RGBD camera](tutorials/tutorial_1_grasps_camera.md)
-2. [Detect Grasps on a Specific Object](tutorials/tutorial_2_grasp_select.md)
-3. [Detect Grasps with OpenVINO](tutorials/tutorial_openvino.md)
+The two parameters that you typically want to play with to improve on the
+number of grasps found are *workspace* and *num_samples*. The first defines the
+volume of space in which to search for grasps as a cuboid of dimensions [minX,
+maxX, minY, maxY, minZ, maxZ], centered at the origin of the point cloud frame.
+The second is the number of samples that are drawn from the point cloud to
+detect grasps. You should set the workspace as small as possible and the number
+of samples as large as possible.
 
-
-## 7) Parameters
-
-Brief explanations of parameters are given in *launch/classify_candidates_file_15_channels.launch* for using PCD files. 
-For use on a robot, see *launch/ur5_15_channels.launch*. The two parameters that you typically want to play with to 
-improve on then number of grasps found are *workspace* and *num_samples*. The first defines the volume of space in which 
-to search for grasps as a cuboid of dimensions [minX, maxX, minY, maxY, minZ, maxZ], centered at the origin. The second 
-is the number of samples that are drawn from the point cloud to detect grasps. You should set the workspace as small as 
-possible and the number of samples as large as possible. 
-
-
-## 8) Views
+<a name="views"></a>
+## 5) Views
 
 ![rviz screenshot](readme/views.png "Single View and Two Views")
 
-You can use this package with a single or with two depth sensors. The package comes with weight files for Caffe 
-for both options. You can find these files in *gpd/caffe/15channels*. For a single sensor, use 
-*single_view_15_channels.caffemodel* and for two depth sensors, use *two_views_15_channels_[angle]*. The *[angle]* is 
-the angle between the two sensor views, as illustrated in the picture below. In the two-views setting, you want to 
-register the two point clouds together before sending them to GPD.
+You can use this package with a single or with two depth sensors. The package
+comes with CAFFE model files for both. You can find these files in
+*models/caffe/15channels*. For a single sensor, use
+*single_view_15_channels.caffemodel* and for two depth sensors, use
+*two_views_15_channels_[angle]*. The *[angle]* is the angle between the two
+sensor views, as illustrated in the picture below. In the two-views setting, you
+want to register the two point clouds together before sending them to GPD.
+
+Providing the camera position to the configuration file (*.cfg) is important,
+as it enables PCL to estimate the correct normals direction (which is to point
+toward the camera). Alternatively, using the
+[ROS wrapper](https://github.com/atenpas/gpd2_ros/), multiple camera positions
+can be provided.
 
 ![rviz screenshot](readme/view_angle.png "Angle Between Sensor Views")
 
-To switch between one and two sensor views, change the parameter *trained_file* in the launch file 
-*launch/caffe/ur5_15channels.launch*.
+To switch between one and two sensor views, change the parameter `weight_file`
+in your config file.
 
+<a name="cnn_channels"></a>
+## 6) Input Channels for Neural Network
 
-## 9) Input Channels for Neural Network
+The package comes with weight files for two different input representations for
+the neural network that is used to decide if a grasp is viable or not: 3 or 15
+channels. The default is 15 channels. However, you can use the 3 channels to
+achieve better runtime for a loss in grasp quality. For more details, please see
+the references below.
 
-The package comes with weight files for two different input representations for the neural network that is used to 
-decide if a grasp is viable or not: 3 or 15 channels. The default is 15 channels. However, you can use the 3 channels 
-to achieve better runtime for a loss in grasp quality. For more details, please see the reference below.
+<a name="cnn_frameworks"></a>
+## 7) CNN Frameworks
 
+GPD comes with a number of different classifier frameworks that
+exploit different hardware and have different dependencies. Switching
+between the frameworks requires to run CMake with additional arguments.
+For example, to use the OpenVino framework:
 
-## 10) Citation
+   ```
+   cmake .. -DUSE_OPENVINO=ON
+   ```
 
-If you like this package and use it in your own work, please cite our paper(s):
+You can use `ccmake` to check out all possible CMake options.
 
-[1] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp Pose Detection in Point 
-Clouds**](http://arxiv.org/abs/1706.09911). The International Journal of Robotics Research, Vol 36, Issue 13-14, 
-pp. 1455 - 1473. October 2017.
+GPD supports the following three frameworks:
 
-[2] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, and Robert Platt. [**High precision grasp pose detection in dense 
-clutter**](http://arxiv.org/abs/1603.01564). IROS 2016. 598-605.
+1. [OpenVino](https://software.intel.com/en-us/openvino-toolkit): [installation instructions](https://github.com/opencv/dldt/blob/2018/inference-engine/README.md) for open source version
+(CPUs, GPUs, FPGAs from Intel)
+1. [Caffe](https://caffe.berkeleyvision.org/) (GPUs from Nvidia or CPUs)
+1. Custom LeNet implementation using the Eigen library (CPU)
 
+Additional classifiers can be added by sub-classing the `classifier` interface.
 
-## 11) Troubleshooting
+##### OpenVino
 
-* GCC 4.8: The package [might not compile](https://github.com/atenpas/gpd/issues/14#issuecomment-324789077) with 
-GCC 4.8. This is due to [a bug](https://gcc.gnu.org/bugzilla/show_bug.cgi?id=58251) in GCC. **Solution:** Upgrade to 
-GCC 4.9. 
+To use OpenVino, you need to run the following command before compiling GPD.
 
-* During `catkin_make`, you get this error: *[...]/caffe/include/caffe/util/cudnn.hpp:8:34: fatal error: caffe/proto/caffe.pb.h: No such file or directory*. **Solution ([source](https://github.com/muupan/dqn-in-the-caffe/issues/3)):**
+   ```
+   export InferenceEngine_DIR=/path/to/dldt/inference-engine/build/
+   ```
+
+<a name="pcl_gpu"></a>
+## 8) GPU Support With PCL
+
+GPD can use GPU methods provided within PCL to speed up point cloud processing.
+
+1. [PCL GPU Install](http://pointclouds.org/documentation/tutorials/gpu_install.php)
+1. Build GPD with `USE_PCL_GPU` cmake flag:
     ```
-    # In the directory you installed Caffe to
-    protoc src/caffe/proto/caffe.proto --cpp_out=.
-    mkdir include/caffe/proto
-    mv src/caffe/proto/caffe.pb.h include/caffe/proto
+    cd gpd
+    mkdir build && cd build
+    cmake .. -DUSE_PCL_GPU=ON
+    make -j
     ```
+
+**Note:** unfortunately, the surface normals produced by the PCL GPU module
+can often be incorrect. The correctness of these normals depends on the number
+of neighbors (a parameter).
+
+<a name="net_train"></a>
+## 9) Network Training
+
+To create training data with the C++ code, you need to install [OpenCV 3.4 Contribs](https://www.python36.com/how-to-install-opencv340-on-ubuntu1604/).
+Next, you need to compile GPD with the flag `DBUILD_DATA_GENERATION` like this:
+
+    ```
+    cd gpd
+    mkdir build && cd build
+    cmake .. -DBUILD_DATA_GENERATION=ON
+    make -j
+    ```
+
+There are four steps to train a network to predict grasp poses. First, we need to create grasp images.
+
+   ```
+   ./generate_data ../cfg/generate_data.cfg
+   ```
+
+You should modify `generate_data.cfg` according to your needs.
+
+Next, you need to resize the created databases to `train_offset` and `test_offset` (see the terminal output of `generate_data`). For example, to resize the training set, use the following commands with `size` set to the value of `train_offset`.
+   ```
+   cd pytorch
+   python reshape_hdf5.py pathToTrainingSet.h5 out.h5 size
+   ```
+
+The third step is to train a neural network. The easiest way to training the network is with the existing code. This requires the **pytorch** framework. To train a network, use the following commands.
+
+   ```
+   cd pytorch
+   python train_net3.py pathToTrainingSet.h5 pathToTestSet.h5 num_channels
+   ```
+
+The fourth step is to convert the model to the ONNX format.
+
+   ```
+   python torch_to_onxx.py pathToPytorchModel.pwf pathToONNXModel.onnx num_channels
+   ```
+
+The last step is to convert the ONNX file to an OpenVINO compatible format: [tutorial](https://software.intel.com/en-us/articles/OpenVINO-Using-ONNX#inpage-nav-4). This gives two files that can be loaded with GPD by modifying the `weight_file` and `model_file` parameters in a CFG file.
+
+<a name="descriptor"></a>
+## 10) Grasp Image/Descriptor
+Generate some grasp poses and their corresponding images/descriptors:
+
+   ```
+   ./test_grasp_image ../tutorials/krylon.pcd 3456 1 ../models/lenet/15channels/params/
+   ```
+
+<img src="readme/image_15channels.png" alt="" width="30%" border="0" />
+
+For details on how the grasp image is created, check out our [journal paper](http://arxiv.org/abs/1706.09911).
+
+<a name="references"></a>
+## 11) References
+
+If you like this package and use it in your own work, please cite our journal
+paper [1]. If you're interested in the (shorter) conference version, check out
+[2].
+
+[1] Andreas ten Pas, Marcus Gualtieri, Kate Saenko, and Robert Platt. [**Grasp
+Pose Detection in Point Clouds**](http://arxiv.org/abs/1706.09911). The
+International Journal of Robotics Research, Vol 36, Issue 13-14, pp. 1455-1473.
+October 2017.
+
+[2] Marcus Gualtieri, Andreas ten Pas, Kate Saenko, and Robert Platt. [**High
+precision grasp pose detection in dense
+clutter**](http://arxiv.org/abs/1603.01564). IROS 2016, pp. 598-605.
+
+## 12) Troubleshooting Tips
+
+1. Remove the `cmake` cache: `CMakeCache.txt`
+1. `make clean`
+1. Remove the `build` folder and rebuild.
+1. Update *gcc* and *g++* to a version > 5.
