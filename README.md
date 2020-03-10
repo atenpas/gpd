@@ -1,7 +1,7 @@
 # Grasp Pose Detection (GPD)
 
 * [Author's website](http://www.ccs.neu.edu/home/atp/)
-* [License](https://github.com/atenpas/gpd2/blob/master/LICENSE.md)
+* [License](https://github.com/atenpas/gpd/blob/master/LICENSE.md)
 * [ROS wrapper](https://github.com/atenpas/gpd_ros/)
 
 Grasp Pose Detection (GPD) is a package to detect 6-DOF grasp poses (3-DOF
@@ -60,13 +60,13 @@ installed, you should be good to go.
 3. Clone the repository into some folder:
 
    ```
-   git clone https://github.com/atenpas/gpd2
+   git clone https://github.com/atenpas/gpd
    ```
 
 4. Build the package:
 
    ```
-   cd gpd2
+   cd gpd
    mkdir build && cd build
    cmake ..
    make -j
@@ -120,7 +120,7 @@ want to register the two point clouds together before sending them to GPD.
 Providing the camera position to the configuration file (*.cfg) is important,
 as it enables PCL to estimate the correct normals direction (which is to point
 toward the camera). Alternatively, using the
-[ROS wrapper](https://github.com/atenpas/gpd2_ros/), multiple camera positions
+[ROS wrapper](https://github.com/atenpas/gpd_ros/), multiple camera positions
 can be provided.
 
 ![rviz screenshot](readme/view_angle.png "Angle Between Sensor Views")
