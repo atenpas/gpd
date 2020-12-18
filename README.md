@@ -74,6 +74,8 @@ installed, you should be good to go.
 
 You can optionally install GPD with `sudo make install` so that it can be used by other projects as a shared library.
 
+If building the package does not work, try to modify the compiler flags, `CMAKE_CXX_FLAGS`, in the file CMakeLists.txt.
+
 <a name="pcd"></a>
 ## 3) Generate Grasps for a Point Cloud File
 
