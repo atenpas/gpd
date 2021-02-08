@@ -170,6 +170,17 @@ To use OpenVino, you need to run the following command before compiling GPD.
    export InferenceEngine_DIR=/path/to/dldt/inference-engine/build/
    ```
 
+<details>
+  <summary>Hints for newer version of OpenVino</summary>
+   
+  - If you are installing newer version of OpenVino(such as 2019R2), you'll need to [setup environment variables]( https://docs.openvinotoolkit.org/2019_R2/_docs_install_guides_installing_openvino_linux.html#set-the-environment-variables) instead of the export above.
+  
+  - Also, due to the API change, latest version may lead to failure of compiling GPD. 2019R2 is tested so you may start from this.
+   
+  - If you are using Ubuntu 18.04, you may meet problems when installing 2019R2. These two articles may help.([1](https://github.com/openvinotoolkit/openvino/issues/294), [2](https://community.intel.com/t5/Intel-Distribution-of-OpenVINO/protobuf-not-installed-required-3-6-1/m-p/1154812#M13043))
+</details>
+
+
 <a name="pcl_gpu"></a>
 ## 8) GPU Support With PCL
 
