@@ -33,10 +33,10 @@ The reference for this package is:
 1. [Views](#views)
 1. [Input Channels for Neural Network](#cnn_channels)
 1. [CNN Frameworks](#cnn_frameworks)
-1. [GPU Support With PCL](#pcl_gpu)
 1. [Network Training](#net_train)
 1. [Grasp Image](#descriptor)
 1. [References](#References)
+1. [Troubleshooting](#troubleshooting)
 
 <a name="requirements"></a>
 ## 1) Requirements
@@ -96,15 +96,18 @@ Below is a visualization of the convention that GPD uses for the grasp pose (pos
 <a name="parameters"></a>
 ## 4) Parameters
 
-Brief explanations of parameters are given in *cfg/eigen_params.cfg*.
+Brief explanations of parameters are given in [cfg/eigen_params.cfg](cfg/eigen_params.cfg).
 
-The two parameters that you typically want to play with to improve on the
-number of grasps found are *workspace* and *num_samples*. The first defines the
+The two parameters that you typically want to play with to **improve the
+number of grasps found** are *workspace* and *num_samples*. The first defines the
 volume of space in which to search for grasps as a cuboid of dimensions [minX,
 maxX, minY, maxY, minZ, maxZ], centered at the origin of the point cloud frame.
 The second is the number of samples that are drawn from the point cloud to
 detect grasps. You should set the workspace as small as possible and the number
 of samples as large as possible.
+
+Most of the code is parallelized. To **improve runtime**, set *num_threads* to 
+the number of (physical) CPU cores that your computer has available.
 
 <a name="views"></a>
 ## 5) Views
@@ -162,34 +165,16 @@ GPD supports the following three frameworks:
 
 Additional classifiers can be added by sub-classing the `classifier` interface.
 
-##### OpenVino
+##### OpenVINO
 
-To use OpenVino, you need to run the following command before compiling GPD.
+OpenVINO is **recommended for speed**. To use OpenVINO, you need to run the following command before compiling GPD.
 
    ```
    export InferenceEngine_DIR=/path/to/dldt/inference-engine/build/
    ```
 
-<a name="pcl_gpu"></a>
-## 8) GPU Support With PCL
-
-GPD can use GPU methods provided within PCL to speed up point cloud processing.
-
-1. [PCL GPU Install](http://pointclouds.org/documentation/tutorials/gpu_install.php)
-1. Build GPD with `USE_PCL_GPU` cmake flag:
-    ```
-    cd gpd
-    mkdir build && cd build
-    cmake .. -DUSE_PCL_GPU=ON
-    make -j
-    ```
-
-**Note:** unfortunately, the surface normals produced by the PCL GPU module
-can often be incorrect. The correctness of these normals depends on the number
-of neighbors (a parameter).
-
 <a name="net_train"></a>
-## 9) Network Training
+## 8) Network Training
 
 To create training data with the C++ code, you need to install [OpenCV 3.4 Contribs](https://www.python36.com/how-to-install-opencv340-on-ubuntu1604/).
 Next, you need to compile GPD with the flag `DBUILD_DATA_GENERATION` like this:
@@ -231,7 +216,7 @@ The fourth step is to convert the model to the ONNX format.
 The last step is to convert the ONNX file to an OpenVINO compatible format: [tutorial](https://software.intel.com/en-us/articles/OpenVINO-Using-ONNX#inpage-nav-4). This gives two files that can be loaded with GPD by modifying the `weight_file` and `model_file` parameters in a CFG file.
 
 <a name="descriptor"></a>
-## 10) Grasp Image/Descriptor
+## 9) Grasp Image/Descriptor
 Generate some grasp poses and their corresponding images/descriptors:
 
    ```
@@ -243,7 +228,7 @@ Generate some grasp poses and their corresponding images/descriptors:
 For details on how the grasp image is created, check out our [journal paper](http://arxiv.org/abs/1706.09911).
 
 <a name="references"></a>
-## 11) References
+## 10) References
 
 If you like this package and use it in your own work, please cite our journal
 paper [1]. If you're interested in the (shorter) conference version, check out
@@ -258,9 +243,10 @@ October 2017.
 precision grasp pose detection in dense
 clutter**](http://arxiv.org/abs/1603.01564). IROS 2016, pp. 598-605.
 
-## 12) Troubleshooting Tips
+<a name="troubleshooting"></a>
+## 11) Troubleshooting Tips
 
-1. Remove the `cmake` cache: `CMakeCache.txt`
+1. Remove the `cmake` cache: `rm CMakeCache.txt`
 1. `make clean`
 1. Remove the `build` folder and rebuild.
 1. Update *gcc* and *g++* to a version > 5.
