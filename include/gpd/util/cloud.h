@@ -184,6 +184,12 @@ class Cloud {
         const Eigen::Matrix3Xd &view_points);
 
   /**
+   * \brief Destructor
+   */
+  virtual ~Cloud () {
+  };
+
+  /**
    * \brief Remove NANs from the point cloud.
    */
   void removeNans();
