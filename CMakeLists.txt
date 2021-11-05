@@ -301,3 +301,38 @@ set_target_properties(${PROJECT_NAME}_grasp_detector
 install(TARGETS ${PROJECT_NAME}_grasp_detector DESTINATION lib)
 
 install(DIRECTORY include/gpd DESTINATION include)
+
+option(BUILD_PYTHON "build python bindings" OFF)
+if(BUILD_PYTHON STREQUAL "ON")
+    # Python bindings
+    message("Building python bindings, need pybind11 to be in build's parent directory")
+    message("https://github.com/pybind/pybind11")
+    add_subdirectory(pybind11)
+    pybind11_add_module(gpd_python SHARED src/pybind.cpp)
+    target_link_libraries(gpd_python PRIVATE
+        ${PROJECT_NAME}_grasp_detector
+        ${PROJECT_NAME}_classifier
+        ${PROJECT_NAME}_clustering
+        ${PROJECT_NAME}_sequential_importance_sampling
+        ${PROJECT_NAME}_antipodal
+        ${PROJECT_NAME}_candidates_generator
+        ${PROJECT_NAME}_finger_hand
+        ${PROJECT_NAME}_frame_estimator
+        ${PROJECT_NAME}_hand
+        ${PROJECT_NAME}_hand_set
+        ${PROJECT_NAME}_hand_geometry
+        ${PROJECT_NAME}_hand_search
+        ${PROJECT_NAME}_local_frame
+        ${PROJECT_NAME}_cloud
+        ${PROJECT_NAME}_config_file
+        ${PROJECT_NAME}_eigen_utils
+        ${PROJECT_NAME}_plot
+        ${PROJECT_NAME}_point_list
+        ${PROJECT_NAME}_image_strategy
+        ${PROJECT_NAME}_image_1_channels_strategy
+        ${PROJECT_NAME}_image_3_channels_strategy
+        ${PROJECT_NAME}_image_12_channels_strategy
+        ${PROJECT_NAME}_image_15_channels_strategy
+        ${PROJECT_NAME}_image_geometry
+        ${PROJECT_NAME}_image_generator)
+endif()
