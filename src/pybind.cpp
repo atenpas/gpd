@@ -19,9 +19,9 @@
 
 pybind11::array_t<double> detectGrasps(
     gpd::GraspDetector &detector,
-    pybind11::array_t<double, pybind11::array::c_style> pcd)
+    pybind11::array_t<double, pybind11::array::c_style> pcd,
+    pybind11::array_t<double, pybind11::array::c_style> camera)
 {
-    // TODO: Make these conditions raise actual exceptions
     if (pcd.ndim() != 2) {
         throw std::invalid_argument("PCD must have two dimensions");
     }
@@ -35,10 +35,18 @@ pybind11::array_t<double> detectGrasps(
     pcl::PointCloud<pcl::PointXYZRGBA> e_cloud;
     pcl::PointCloud<pcl::PointXYZRGBA>::Ptr cloud_ptr = e_cloud.makeShared();
     for(ssize_t i = 0; i < len; i++){
-        pcl::PointXYZRGBA pt(pcd.at(i, 0), pcd.at(i, 1), pcd.at(i, 2));
+        pcl::PointXYZRGBA pt;
+        pt.x = pcd.at(i, 0);
+        pt.y = pcd.at(i, 1);
+        pt.z = pcd.at(i, 2);
         cloud_ptr->push_back(pt);
     }
-    gpd::util::Cloud gpd_cloud(cloud_ptr);
+    Eigen::MatrixXi visibility = Eigen::MatrixXi::Ones(1, len);
+    Eigen::Matrix3Xd view_points;
+    for(ssize_t i = 0; i < 3; i++){
+        view_points(i) = camera.at(i);
+    }
+    gpd::util::Cloud gpd_cloud(cloud_ptr, visibility, view_points);
     detector.preprocessPointCloud(gpd_cloud);
     std::vector<std::unique_ptr<gpd::candidate::Hand>> grasps = detector.detectGrasps(gpd_cloud);
     std::vector<std::array<double, GRASP_DESC_LEN>> ret;
