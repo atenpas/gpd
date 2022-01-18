@@ -42,7 +42,7 @@ pybind11::array_t<double> detectGrasps(
         cloud_ptr->push_back(pt);
     }
     Eigen::MatrixXi visibility = Eigen::MatrixXi::Ones(1, len);
-    Eigen::Matrix3Xd view_points;
+    Eigen::Matrix3Xd view_points(3,1);
     for(ssize_t i = 0; i < 3; i++){
         view_points(i) = camera.at(i);
     }
