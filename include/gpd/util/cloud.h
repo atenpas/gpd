@@ -138,6 +138,12 @@ class Cloud {
 
   /**
    * \brief Constructor.
+   * \param cloud the point cloud (of size n)
+   */
+  Cloud(const PointCloudRGB::Ptr &cloud);
+
+  /**
+   * \brief Constructor.
    * \param cloud the point cloud with surface normals (of size n)
    * \param camera_source the camera source for each point in the cloud (size: k
    * x n)

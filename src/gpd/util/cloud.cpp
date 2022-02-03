@@ -32,6 +32,20 @@ Cloud::Cloud(const PointCloudRGB::Ptr &cloud,
   *cloud_processed_ = *cloud_original_;
 }
 
+Cloud::Cloud(const PointCloudRGB::Ptr &cloud)
+    : cloud_processed_(new PointCloudRGB),
+      cloud_original_(new PointCloudRGB) {
+  view_points_.resize(3, 1);
+  view_points_ << 0.0, 0.0, 0.0;
+  sample_indices_.resize(0);
+  samples_.resize(3, 0);
+  normals_.resize(3, 0);
+
+  pcl::copyPointCloud(*cloud, *cloud_original_);
+  *cloud_processed_ = *cloud_original_;
+  camera_source_ = Eigen::MatrixXi::Ones(1, cloud_processed_->size());
+}
+
 Cloud::Cloud(const PointCloudPointNormal::Ptr &cloud,
              const Eigen::MatrixXi &camera_source,
              const Eigen::Matrix3Xd &view_points)
