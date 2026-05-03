@@ -34,6 +34,7 @@
 
 #include <Eigen/Dense>
 
+#include <cassert>
 #include <vector>
 
 namespace gpd {
@@ -64,6 +65,8 @@ class Layer {
    */
   void setWeightsAndBiases(const std::vector<float> &weights,
                            const std::vector<float> &biases) {
+    assert(!weights.empty());
+    assert(!biases.empty());
     weights_ = weights;
     biases_ = biases;
   }

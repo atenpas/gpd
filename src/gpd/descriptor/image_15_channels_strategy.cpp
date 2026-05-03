@@ -1,4 +1,5 @@
 #include <gpd/descriptor/image_15_channels_strategy.h>
+#include <omp.h>
 
 namespace gpd {
 namespace descriptor {

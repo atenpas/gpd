@@ -41,8 +41,7 @@ int DoMain(int argc, char *argv[]) {
   }
 
   // Read parameters from configuration file.
-  util::ConfigFile config_file(config_filename);
-  config_file.ExtractKeys();
+  const util::ConfigFile config_file(config_filename);
 
   // Set the camera position. Assumes a single camera view.
   std::vector<double> camera_position =

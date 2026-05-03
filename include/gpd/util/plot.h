@@ -46,7 +46,7 @@ namespace util {
 typedef pcl::PointCloud<pcl::PointXYZRGBA> PointCloudRGBA;
 typedef pcl::PointCloud<pcl::PointNormal> PointCloudPointNormal;
 
-typedef boost::shared_ptr<pcl::visualization::PCLVisualizer> PCLVisualizer;
+typedef std::shared_ptr<pcl::visualization::PCLVisualizer> PCLVisualizer;
 
 /**
  *

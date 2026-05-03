@@ -67,9 +67,9 @@ class HandGeometry {
   /**
    * \brief Constructor that uses a given configuration file to read in the
    * parameters of the robot hand.
-   * \param filepath the filepath to the configuration file
+   * \param config_file the configuration file
    */
-  HandGeometry(const std::string &filepath);
+  HandGeometry(const util::ConfigFile &config_file);
 
   double finger_width_;    ///< the width of the robot fingers
   double outer_diameter_;  ///< the width of the robot hand including fingers

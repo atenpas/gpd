@@ -32,6 +32,7 @@
 #ifndef EIGEN_CLASSIFIER_H_
 #define EIGEN_CLASSIFIER_H_
 
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -61,8 +62,8 @@ class EigenClassifier : public Classifier {
    * \param weights_file the location of the file that contains the network
    * weights
    */
-  EigenClassifier(const std::string &model_file,
-                  const std::string &weights_file, Classifier::Device device,
+  EigenClassifier(const std::filesystem::path &weights_file,
+                  Classifier::Device device,
                   int batch_size);
 
   /**

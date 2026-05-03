@@ -72,9 +72,9 @@ class ImageGeometry {
   /**
    * \brief Constructor that uses a given configuration file to read in the
    * parameters of the grasp image.
-   * \param filepath the filepath to the configuration file
+   * \param config_file the configuration file
    */
-  ImageGeometry(const std::string &filepath);
+  ImageGeometry(const util::ConfigFile &config_file);
 
   double outer_diameter_;  ///< the width of the volume
   double depth_;           ///< the depth of the volume

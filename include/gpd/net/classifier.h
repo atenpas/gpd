@@ -36,6 +36,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <filesystem>
 
 // OpenCV
 #include <opencv2/core/core.hpp>
@@ -60,8 +61,8 @@ class Classifier {
    * \param device target device on which the network is run
    * \return the classifier
    */
-  static std::shared_ptr<Classifier> create(const std::string &model_file,
-                                            const std::string &weights_file,
+  static std::shared_ptr<Classifier> create(const std::filesystem::path &model_file,
+                                            const std::filesystem::path &weights_file,
                                             Device device = Device::eCPU,
                                             int batch_size = 1);
 

@@ -110,7 +110,7 @@ class Cloud {
      * \return true if they differ in at least one of the first three elements,
      * false otherwise
      */
-    bool operator()(const Eigen::Vector4i &a, const Eigen::Vector4i &b) {
+    bool operator()(const Eigen::Vector4i &a, const Eigen::Vector4i &b) const {
       for (int i = 0; i < a.size() - 1; i++) {
         if (a(i) != b(i)) {
           return true;

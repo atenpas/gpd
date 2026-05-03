@@ -43,8 +43,7 @@ int DoMain(int argc, char *argv[]) {
   }
 
   // Read parameters from configuration file.
-  util::ConfigFile config_file(argv[1]);
-  config_file.ExtractKeys();
+  const util::ConfigFile config_file(argv[1]);
 
   candidate::HandGeometry hand_geom;
   hand_geom.finger_width_ =

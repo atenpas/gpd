@@ -5,6 +5,9 @@
 #include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/segmentation/sac_segmentation.h>
 
+#include <random>
+#include <omp.h>
+
 namespace gpd {
 namespace util {
 
@@ -379,7 +382,9 @@ void Cloud::subsampleSamples(int num_samples) {
     for (int i = 0; i < seq.size(); i++) {
       seq[i] = i;
     }
-    std::random_shuffle(seq.begin(), seq.end());
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(seq.begin(), seq.end(), g);
 
     Eigen::Matrix3Xd subsamples(3, num_samples);
     for (int i = 0; i < num_samples; i++) {

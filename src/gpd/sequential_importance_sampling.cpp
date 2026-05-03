@@ -11,8 +11,7 @@ const int MAX_OF_GAUSSIANS = 1;
 SequentialImportanceSampling::SequentialImportanceSampling(
     const std::string &config_filename) {
   // Read parameters from configuration file.
-  util::ConfigFile config_file(config_filename);
-  config_file.ExtractKeys();
+  const util::ConfigFile config_file(config_filename);
 
   num_init_samples_ = config_file.getValueOfKey<int>("num_init_samples", 50);
   num_iterations_ = config_file.getValueOfKey<int>("num_iterations", 5);

@@ -60,12 +60,6 @@ class ConfigFile {
   ConfigFile(const std::string &fName);
 
   /**
-   * \brief Extract all keys.
-   * \return `false` if the configuration file cannot be found, `true` otherwise
-   */
-  bool ExtractKeys();
-
-  /**
    * \brief Check if a key exists.
    * \param key the key
    * \return `false` if the configuration file cannot be found, `true` otherwise
@@ -93,7 +87,7 @@ class ConfigFile {
    * \return the value as a `string`
    */
   std::string getValueOfKeyAsString(const std::string &key,
-                                    const std::string &defaultValue);
+                                    const std::string &defaultValue) const;
 
   /**
    * \brief Return the value at a given key as a `std::vector<double>`.
@@ -102,7 +96,7 @@ class ConfigFile {
    * \return the value as a `std::vector<double>`
    */
   std::vector<double> getValueOfKeyAsStdVectorDouble(
-      const std::string &key, const std::string &defaultValue);
+      const std::string &key, const std::string &defaultValue) const;
 
   /**
    * \brief Return the value at a given key as a `std::vector<int>`.
@@ -111,7 +105,7 @@ class ConfigFile {
    * \return the value as a `std::vector<int>`
    */
   std::vector<int> getValueOfKeyAsStdVectorInt(const std::string &key,
-                                               const std::string &defaultValue);
+                                               const std::string &defaultValue) const;
 
   /**
    * \brief Convert value of type `T` to `string`.
@@ -142,29 +136,38 @@ class ConfigFile {
     return returnVal;
   }
 
+  std::string&
+  operator[](std::string&& key);
+
  private:
-  void removeComment(std::string &line) const;
+  static
+  void removeComment(std::string &line);
 
-  bool onlyWhitespace(const std::string &line) const;
+  static
+  bool onlyWhitespace(const std::string &line);
 
-  bool validLine(const std::string &line) const;
+  static
+  bool validLine(const std::string &line);
 
+  static
   void extractKey(std::string &key, size_t const &sepPos,
-                  const std::string &line) const;
+                  const std::string &line);
 
+  static
   void extractValue(std::string &value, size_t const &sepPos,
-                    const std::string &line) const;
+                    const std::string &line);
 
   void extractContents(const std::string &line);
 
   void parseLine(const std::string &line, size_t const lineNo);
 
+  static
   std::vector<double> stringToDouble(const std::string &str);
 
+  static
   std::vector<int> stringToInt(const std::string &str);
 
   std::map<std::string, std::string> contents;
-  std::string fName;
 };
 
 }  // namespace util

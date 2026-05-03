@@ -45,7 +45,8 @@
 #include <boost/random/taus88.hpp>
 #include <boost/random/uniform_real.hpp>
 #include <boost/random/variate_generator.hpp>
-#include <boost/unordered_set.hpp>
+
+#include <unordered_set>
 
 // Eigen
 #include <Eigen/Dense>
@@ -87,7 +88,7 @@ struct Vector3iEqual {
   }
 };
 
-typedef boost::unordered_set<Eigen::Vector3i, boost::hash<Eigen::Vector3i>,
+typedef std::unordered_set<Eigen::Vector3i, boost::hash<Eigen::Vector3i>,
                              Vector3iEqual, std::allocator<Eigen::Vector3i>>
     Vector3iSet;
 

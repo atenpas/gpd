@@ -46,8 +46,7 @@ int DoMain(int argc, char *argv[]) {
 
   // Read parameters from configuration file.
   const double VOXEL_SIZE = 0.003;
-  util::ConfigFile config_file(config_filename);
-  config_file.ExtractKeys();
+  const util::ConfigFile config_file(config_filename);
   std::vector<double> workspace =
       config_file.getValueOfKeyAsStdVectorDouble("workspace", "-1 1 -1 1 -1 1");
   int num_threads = config_file.getValueOfKey<int>("num_threads", 1);

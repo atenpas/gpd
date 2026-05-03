@@ -3,17 +3,17 @@
 namespace gpd {
 namespace util {
 
-void ConfigFile::removeComment(std::string &line) const {
+void ConfigFile::removeComment(std::string &line) {
   if (line.find('#') != line.npos) {
     line.erase(line.find('#'));
   }
 }
 
-bool ConfigFile::onlyWhitespace(const std::string &line) const {
+bool ConfigFile::onlyWhitespace(const std::string &line) {
   return (line.find_first_not_of(' ') == line.npos);
 }
 
-bool ConfigFile::validLine(const std::string &line) const {
+bool ConfigFile::validLine(const std::string &line) {
   std::string temp = line;
   temp.erase(0, temp.find_first_not_of("\t "));
   if (temp[0] == '=') {
@@ -30,7 +30,7 @@ bool ConfigFile::validLine(const std::string &line) const {
 }
 
 void ConfigFile::extractKey(std::string &key, size_t const &sepPos,
-                            const std::string &line) const {
+                            const std::string &line) {
   key = line.substr(0, sepPos);
   if (key.find('\t') != line.npos || key.find(' ') != line.npos) {
     key.erase(key.find_first_of("\t "));
@@ -38,7 +38,7 @@ void ConfigFile::extractKey(std::string &key, size_t const &sepPos,
 }
 
 void ConfigFile::extractValue(std::string &value, size_t const &sepPos,
-                              const std::string &line) const {
+                              const std::string &line) {
   value = line.substr(sepPos + 1);
   value.erase(0, value.find_first_not_of("\t "));
   value.erase(value.find_last_not_of("\t ") + 1);
@@ -73,44 +73,40 @@ void ConfigFile::parseLine(const std::string &line, size_t const lineNo) {
   extractContents(line);
 }
 
-bool ConfigFile::ExtractKeys() {
-  std::ifstream file;
-  file.open(fName.c_str());
-  if (!file) {
-    std::cout << "Config file " + fName + " could not be found!\n";
-    return false;
-  }
-
-  std::string line;
-  size_t lineNo = 0;
-  while (std::getline(file, line)) {
-    lineNo++;
-    std::string temp = line;
-
-    if (temp.empty()) {
-      continue;
+ConfigFile::ConfigFile(const std::string &fName) {
+    std::ifstream file;
+    file.open(fName.c_str());
+    if (!file) {
+        throw std::runtime_error("Config file '" + fName + "' could not be found!");
     }
 
-    removeComment(temp);
-    if (onlyWhitespace(temp)) {
-      continue;
+    std::string line;
+    size_t lineNo = 0;
+    while (std::getline(file, line)) {
+        lineNo++;
+        std::string temp = line;
+
+        if (temp.empty()) {
+            continue;
+        }
+
+        removeComment(temp);
+        if (onlyWhitespace(temp)) {
+            continue;
+        }
+
+        parseLine(temp, lineNo);
     }
 
-    parseLine(temp, lineNo);
-  }
-
-  file.close();
-  return true;
+    file.close();
 }
-
-ConfigFile::ConfigFile(const std::string &fName) { this->fName = fName; }
 
 bool ConfigFile::keyExists(const std::string &key) const {
   return contents.find(key) != contents.end();
 }
 
 std::string ConfigFile::getValueOfKeyAsString(const std::string &key,
-                                              const std::string &defaultValue) {
+                                              const std::string &defaultValue) const {
   if (!keyExists(key)) {
     return defaultValue;
   }
@@ -119,7 +115,7 @@ std::string ConfigFile::getValueOfKeyAsString(const std::string &key,
 }
 
 std::vector<double> ConfigFile::getValueOfKeyAsStdVectorDouble(
-    const std::string &key, const std::string &defaultValue) {
+    const std::string &key, const std::string &defaultValue) const {
   std::string s = getValueOfKeyAsString(key, defaultValue);
 
   std::vector<double> vec = stringToDouble(s);
@@ -128,7 +124,7 @@ std::vector<double> ConfigFile::getValueOfKeyAsStdVectorDouble(
 }
 
 std::vector<int> ConfigFile::getValueOfKeyAsStdVectorInt(
-    const std::string &key, const std::string &defaultValue) {
+    const std::string &key, const std::string &defaultValue) const {
   std::string s = getValueOfKeyAsString(key, defaultValue);
 
   std::vector<int> vec = stringToInt(s);
@@ -164,6 +160,11 @@ std::vector<int> ConfigFile::stringToInt(const std::string &str) {
   }
 
   return values;
+}
+
+std::string&
+ConfigFile::operator[](std::string&& k) {
+  return contents[k];
 }
 
 }  // namespace util

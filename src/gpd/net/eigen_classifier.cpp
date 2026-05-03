@@ -1,10 +1,10 @@
 #include <gpd/net/eigen_classifier.h>
+#include <omp.h>
 
 namespace gpd {
 namespace net {
 
-EigenClassifier::EigenClassifier(const std::string &model_file,
-                                 const std::string &weights_file,
+EigenClassifier::EigenClassifier(const std::filesystem::path &weights_file,
                                  Classifier::Device device, int batch_size)
     : num_threads_(4) {
   double start = omp_get_wtime();
@@ -25,27 +25,26 @@ EigenClassifier::EigenClassifier(const std::string &model_file,
   dense2_ = std::make_unique<DenseLayer>(2);
 
   // Set weights and biases.
-  const std::string &params_dir = weights_file;
   std::vector<float> w_vec =
-      readBinaryFileIntoVector(params_dir + "conv1_weights.bin");
+      readBinaryFileIntoVector(weights_file / "conv1_weights.bin");
   std::vector<float> b_vec =
-      readBinaryFileIntoVector(params_dir + "conv1_biases.bin");
+      readBinaryFileIntoVector(weights_file / "conv1_biases.bin");
   conv1_->setWeightsAndBiases(w_vec, b_vec);
 
-  w_vec = readBinaryFileIntoVector(params_dir + "conv2_weights.bin");
-  b_vec = readBinaryFileIntoVector(params_dir + "conv2_biases.bin");
+  w_vec = readBinaryFileIntoVector(weights_file / "conv2_weights.bin");
+  b_vec = readBinaryFileIntoVector(weights_file / "conv2_biases.bin");
   conv2_->setWeightsAndBiases(w_vec, b_vec);
 
   std::vector<float> w_dense1 =
-      readBinaryFileIntoVector(params_dir + "ip1_weights.bin");
+      readBinaryFileIntoVector(weights_file / "ip1_weights.bin");
   std::vector<float> b_dense1 =
-      readBinaryFileIntoVector(params_dir + "ip1_biases.bin");
+      readBinaryFileIntoVector(weights_file / "ip1_biases.bin");
   dense1_->setWeightsAndBiases(w_dense1, b_dense1);
 
   std::vector<float> w_dense2 =
-      readBinaryFileIntoVector(params_dir + "ip2_weights.bin");
+      readBinaryFileIntoVector(weights_file / "ip2_weights.bin");
   std::vector<float> b_dense2 =
-      readBinaryFileIntoVector(params_dir + "ip2_biases.bin");
+      readBinaryFileIntoVector(weights_file / "ip2_biases.bin");
 
   dense2_->setWeightsAndBiases(w_dense2, b_dense2);
 

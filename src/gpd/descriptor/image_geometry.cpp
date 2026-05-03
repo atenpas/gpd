@@ -18,9 +18,7 @@ ImageGeometry::ImageGeometry(double outer_diameter, double depth, double height,
       size_(size),
       num_channels_(num_channels) {}
 
-ImageGeometry::ImageGeometry(const std::string &filepath) {
-  util::ConfigFile config_file(filepath);
-  config_file.ExtractKeys();
+ImageGeometry::ImageGeometry(const util::ConfigFile &config_file) {
   outer_diameter_ = config_file.getValueOfKey<double>("volume_width", 0.10);
   depth_ = config_file.getValueOfKey<double>("volume_depth", 0.06);
   height_ = config_file.getValueOfKey<double>("volume_height", 0.02);

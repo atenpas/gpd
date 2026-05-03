@@ -67,9 +67,9 @@ class GraspDetector {
  public:
   /**
    * \brief Constructor.
-   * \param node ROS node handle
+   * \param config_file the configuration file
    */
-  GraspDetector(const std::string &config_filename);
+  GraspDetector(const util::ConfigFile &config_file);
 
   /**
    * \brief Detect grasps in a point cloud.

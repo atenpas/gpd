@@ -1,6 +1,7 @@
 #include <gpd/candidate/hand_set.h>
 
 #include <random>
+#include <omp.h>
 
 namespace gpd {
 namespace candidate {

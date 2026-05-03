@@ -2,20 +2,13 @@
 
 namespace gpd {
 
-GraspDetector::GraspDetector(const std::string &config_filename) {
+GraspDetector::GraspDetector(const util::ConfigFile &config_file) {
   Eigen::initParallel();
-
-  // Read parameters from configuration file.
-  util::ConfigFile config_file(config_filename);
-  config_file.ExtractKeys();
 
   // Read hand geometry parameters.
   std::string hand_geometry_filename =
       config_file.getValueOfKeyAsString("hand_geometry_filename", "");
-  if (hand_geometry_filename == "0") {
-    hand_geometry_filename = config_filename;
-  }
-  candidate::HandGeometry hand_geom(hand_geometry_filename);
+  candidate::HandGeometry hand_geom((hand_geometry_filename == "0") ? config_file : hand_geometry_filename);
   std::cout << hand_geom;
 
   // Read plotting parameters.
@@ -120,10 +113,7 @@ GraspDetector::GraspDetector(const std::string &config_filename) {
   // Read grasp image parameters.
   std::string image_geometry_filename =
       config_file.getValueOfKeyAsString("image_geometry_filename", "");
-  if (image_geometry_filename == "0") {
-    image_geometry_filename = config_filename;
-  }
-  descriptor::ImageGeometry image_geom(image_geometry_filename);
+  descriptor::ImageGeometry image_geom((image_geometry_filename == "0") ? config_file : image_geometry_filename);
   std::cout << image_geom;
 
   // Read classification parameters and create classifier.
@@ -266,9 +256,11 @@ std::vector<std::unique_ptr<candidate::Hand>> GraspDetector::detectGrasps(
 
   // 4. Classify the grasp candidates.
   double t0_classify = omp_get_wtime();
-  std::vector<float> scores = classifier_->classifyImages(images);
-  for (int i = 0; i < hands.size(); i++) {
-    hands[i]->setScore(scores[i]);
+  if (classifier_) {
+    std::vector<float> scores = classifier_->classifyImages(images);
+    for (int i = 0; i < hands.size(); i++) {
+      hands[i]->setScore(scores[i]);
+    }
   }
   double t_classify = omp_get_wtime() - t0_classify;
 
@@ -536,14 +528,21 @@ GraspDetector::pruneGraspCandidates(
   std::vector<std::unique_ptr<cv::Mat>> images;
   image_generator_->createImages(cloud, hand_set_list, images, hands);
 
-  // 2. Classify the grasp candidates.
-  std::vector<float> scores = classifier_->classifyImages(images);
   std::vector<std::unique_ptr<candidate::Hand>> hands_out;
+  if (classifier_) {
+    // 2. Classify the grasp candidates.
+    std::vector<float> scores = classifier_->classifyImages(images);
 
-  // 3. Only keep grasps with a score larger than <min_score>.
-  for (int i = 0; i < hands.size(); i++) {
-    if (scores[i] > min_score) {
-      hands[i]->setScore(scores[i]);
+    // 3. Only keep grasps with a score larger than <min_score>.
+    for (int i = 0; i < hands.size(); i++) {
+      if (scores[i] > min_score) {
+        hands[i]->setScore(scores[i]);
+        hands_out.push_back(std::move(hands[i]));
+      }
+    }
+  }
+  else {
+    for (int i = 0; i < hands.size(); i++) {
       hands_out.push_back(std::move(hands[i]));
     }
   }

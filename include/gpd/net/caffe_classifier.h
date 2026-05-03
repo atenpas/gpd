@@ -84,8 +84,8 @@ class CaffeClassifier : public Classifier {
   int getBatchSize() const { return input_layer_->batch_size(); }
 
  private:
-  boost::shared_ptr<caffe::Net<float>> net_;
-  boost::shared_ptr<caffe::MemoryDataLayer<float>> input_layer_;
+  std::shared_ptr<caffe::Net<float>> net_;
+  std::shared_ptr<caffe::MemoryDataLayer<float>> input_layer_;
 };
 
 }  // namespace net

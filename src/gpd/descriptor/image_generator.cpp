@@ -1,5 +1,7 @@
 #include <gpd/descriptor/image_generator.h>
 
+#include <omp.h>
+
 namespace gpd {
 namespace descriptor {
 
